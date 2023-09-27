@@ -3,10 +3,12 @@ package net.swade.mongos;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
+import lombok.Getter;
 import org.bson.Document;
 
+@Getter
 @SuppressWarnings("unused")
-public class MongoS extends Database {
+public class MongoS extends Database  {
     private final MongoClient mongo;
 
     public MongoS(String host, int port, String dbName) {
@@ -19,13 +21,10 @@ public class MongoS extends Database {
         init(mongo.getDatabase(dbName));
     }
 
-    //Connects directly to localhost
     public MongoS(String dbName){
         this.mongo = new MongoClient("localhost", 27017);
         init(mongo.getDatabase(dbName));
     }
-
-    //--------------------------------------
 
     public MongoCollection<Document> getCollection(String collection) {
         return this.database.getCollection(collection);
@@ -35,9 +34,5 @@ public class MongoS extends Database {
         Database db = new Database();
         db.init(mongo.getDatabase(dataBase));
         return db;
-    }
-
-    public MongoClient getMongoClient() {
-        return this.mongo;
     }
 }

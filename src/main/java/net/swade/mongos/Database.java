@@ -8,7 +8,6 @@ import com.mongodb.client.MongoDatabase;
 import lombok.Getter;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -21,9 +20,6 @@ public class Database {
     protected void init(MongoDatabase database) {
         this.database = database;
     }
-
-    //--------------------------------------
-
 
     public void set(String collection, Object key, Object object) {
         Document document;
@@ -49,8 +45,6 @@ public class Database {
         this.database.getCollection(collection).insertOne(document);
     }
 
-    //--------------------------------------
-
     public Document removeData(String collection, Object key) {
         return removeData(collection, "key", key);
     }
@@ -59,8 +53,6 @@ public class Database {
         DBObject dbObject = new BasicDBObject().append(keyName, key instanceof CaseInsensitiveString ? ((CaseInsensitiveString) key).compile() : key);
         return this.database.getCollection(collection).findOneAndDelete((Bson) dbObject);
     }
-
-    //--------------------------------------
 
     public boolean exists(String collection, Object key) {
         return exists(collection, "key", key);
@@ -73,8 +65,6 @@ public class Database {
     public boolean exists(String collection, DBObject object) {
         return database.getCollection(collection).find((Bson) object).first() != null;
     }
-
-    //--------------------------------------
 
     public Integer getInt(String collection, Object key, Integer defaultValue) {
         return getInt(collection, "key", key, "value", defaultValue);
@@ -96,8 +86,6 @@ public class Database {
         return getFloat(collection, "key", key, "value", defaultValue);
     }
 
-    //--------------------------------------
-
     public Integer getInt(String collection, String keyName, Object key, Integer defaultValue) {
         return getInt(collection, keyName, key, "value", defaultValue);
     }
@@ -117,9 +105,6 @@ public class Database {
     public Float getFloat(String collection, String keyName, Object key, Float defaultValue) {
         return getFloat(collection, keyName, key, "value", defaultValue);
     }
-
-    //--------------------------------------
-
 
     public Integer getInt(String collection, String keyName, Object key, String value, Integer defaultValue) {
         Document doc = getDocument(collection, keyName, key);
@@ -160,8 +145,6 @@ public class Database {
         }
         return defaultValue;
     }
-
-    //--------------------------------------
 
     public <T> T[] getObjects(String collection, Class<T> classOff, String keyName, Object key) {
         ArrayList<Document> objects = getDocumentsAsList(collection, keyName, key);
@@ -207,8 +190,6 @@ public class Database {
         return docs;
     }
 
-    //--------------------------------------
-
     @Deprecated(since = "2.3")
     public List<String> getStringList(String collection, String keyName, Object key, String value) {
         return getStringList(collection, keyName, key, value, null);
@@ -238,8 +219,6 @@ public class Database {
             return Objects.requireNonNullElseGet(defaultList, ArrayList::new);
         }
     }
-
-    //--------------------------------------
 
     public <T> List<T> getList(String collection, String keyName, Object key, Class<T> classOff) {
         return getList(collection, keyName, key, "value", classOff);

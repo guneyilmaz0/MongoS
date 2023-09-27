@@ -1,7 +1,6 @@
 package net.swade.mongos;
 
 import lombok.AllArgsConstructor;
-
 import java.util.regex.Pattern;
 
 @AllArgsConstructor

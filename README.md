@@ -32,6 +32,12 @@ mongo.set("collection", key, Object);
 
 ### Maven
 ```XML
+<repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+</repository>
+```
+```XML
 <dependency>
     <groupId>net.guneyilmaz0.mongos</groupId>
     <artifactId>mongos</artifactId>

@@ -2,8 +2,13 @@
 Simple Mongo API
 
 
-
 ### Latest Features
+
+- 3.1.0
+```txt
+Some bug fixes & improvements
+Changed groupId
+```
 
 - 3.0.1
 ```
@@ -28,8 +33,8 @@ mongo.set("collection", key, Object);
 ### Maven
 ```XML
 <dependency>
-    <groupId>net.swade.mongos</groupId>
+    <groupId>net.guneyilmaz0.mongos</groupId>
     <artifactId>mongos</artifactId>
-    <version>3.0.1</version>
+    <version>VERSION</version>
 </dependency>
 ```

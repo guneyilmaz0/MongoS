@@ -23,11 +23,11 @@ public class Database {
 
     public void set(String collection, Object key, Object object) {
         Document document;
-        if (object instanceof MongoSObject){
-            document = Document.parse(new Gson().toJson(object));
-        } else {
-            document = new Document().append("key", key instanceof CaseInsensitiveString ? key.toString() : key).append("value", object);
+        if (object instanceof MongoSObject) {
+            object = object.toString();
         }
+        document = new Document().append("key", key instanceof CaseInsensitiveString ? key.toString() : key).append("value", object);
+
         set(collection, key, document);
     }
 
@@ -161,7 +161,7 @@ public class Database {
     }
 
     public <T> T getObject(String collection, String keyName, Object key, Class<T> classOff) {
-        return new Gson().fromJson(getObjectJson(collection, keyName, key), classOff);
+        return new Gson().fromJson(getString(collection, key, ""), classOff);
     }
 
     public String getObjectJson(String collection, Object key) {

@@ -4,6 +4,11 @@ Simple Mongo API
 
 ### Latest Features
 
+- 3.2.0
+```txt
+getObject() & set() function improvements
+```
+
 - 3.1.0
 ```txt
 Some bug fixes & improvements
@@ -39,8 +44,8 @@ mongo.set("collection", key, Object);
 ```
 ```XML
 <dependency>
-    <groupId>net.guneyilmaz0.mongos</groupId>
-    <artifactId>mongos</artifactId>
+    <groupId>com.github.guneyilmaz0</groupId>
+    <artifactId>MongoS</artifactId>
     <version>VERSION</version>
 </dependency>
 ```

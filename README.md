@@ -17,7 +17,7 @@ Changed groupId
 
 - 3.0.1
 ```
-Relased new version
+Released new version
 ```
 
 ### Usage

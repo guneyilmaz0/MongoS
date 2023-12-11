@@ -10,7 +10,6 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Getter
 @SuppressWarnings("unused")
@@ -188,36 +187,6 @@ public class Database {
             docs.add(document);
         }
         return docs;
-    }
-
-    @Deprecated(since = "2.3")
-    public List<String> getStringList(String collection, String keyName, Object key, String value) {
-        return getStringList(collection, keyName, key, value, null);
-    }
-
-    @Deprecated(since = "2.3")
-    public List<String> getStringList(String collection, String keyName, Object key) {
-        return getStringList(collection, keyName, key, "value", null);
-    }
-
-    @Deprecated(since = "2.3")
-    public List<String> getStringList(String collection, Object key, List<String> defaultList) {
-        return getStringList(collection, "key", key, "value", defaultList);
-    }
-
-    @Deprecated(since = "2.3")
-    public List<String> getStringList(String collection, Object key) {
-        return getStringList(collection, "key", key, "value", null);
-    }
-
-    @Deprecated(since = "2.3")
-    public List<String> getStringList(String collection, String keyName, Object key, String value, List<String> defaultList) {
-        if (exists(collection, keyName, key)) {
-            Document doc = getDocument(collection, keyName, key);
-            return new ArrayList<>(doc.getList(value, String.class));
-        } else {
-            return Objects.requireNonNullElseGet(defaultList, ArrayList::new);
-        }
     }
 
     public <T> List<T> getList(String collection, String keyName, Object key, Class<T> classOff) {

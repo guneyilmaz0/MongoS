@@ -2,23 +2,10 @@
 Simple Mongo API
 
 
-### Latest Features
+### Patch Notes
 
-- 3.2.0
-```txt
-getObject() & set() function improvements
-```
-
-- 3.1.0
-```txt
-Some bug fixes & improvements
-Changed groupId
-```
-
-- 3.0.1
-```
-Released new version
-```
+- 4.1.1-BETA
+   - No description
 
 ### Usage
 

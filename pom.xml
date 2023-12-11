@@ -6,7 +6,7 @@
 
     <groupId>net.guneyilmaz0.mongos</groupId>
     <artifactId>MongoS</artifactId>
-    <version>4.0.1-BETA</version>
+    <version>4.1.1-BETA</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -84,7 +84,7 @@
 
     <developers>
         <developer>
-            <name>SwadeDev0</name>
+            <name>guneyilmaz0</name>
             <email>guneyyilmaz2707@gmail.com</email>
         </developer>
     </developers>
@@ -115,11 +115,6 @@
             <artifactId>kotlin-test</artifactId>
             <version>${kotlin.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib-jdk8</artifactId>
-            <version>${kotlin.version}</version>
         </dependency>
     </dependencies>
 

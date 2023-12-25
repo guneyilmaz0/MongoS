@@ -1,208 +1,187 @@
-package net.guneyilmaz0.mongos;
+package net.guneyilmaz0.mongos
 
-import com.google.gson.Gson;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoDatabase;
-import lombok.Getter;
-import org.bson.Document;
-import org.bson.conversions.Bson;
-import java.util.ArrayList;
-import java.util.List;
+import com.google.gson.Gson
+import com.mongodb.BasicDBObject
+import com.mongodb.DBObject
+import com.mongodb.client.FindIterable
+import com.mongodb.client.MongoDatabase
+import org.bson.Document
+import org.bson.conversions.Bson
 
-@Getter
-@SuppressWarnings("unused")
-public class Database {
-    public MongoDatabase database;
+open class Database {
+    var database: MongoDatabase? = null
 
-    protected void init(MongoDatabase database) {
-        this.database = database;
+    open fun init(database: MongoDatabase?) {
+        this.database = database
     }
 
-    public void set(String collection, Object key, Object object) {
-        Document document;
-        if (object instanceof MongoSObject) {
-            object = object.toString();
+    fun set(collection: String, key: Any, value: Any) {
+        var document: Document = when (key) {
+            is CaseInsensitiveString -> Document().append("key", key.compile())
+            else -> Document().append("key", key)
         }
-        document = new Document().append("key", key instanceof CaseInsensitiveString ? key.toString() : key).append("value", object);
 
-        set(collection, key, document);
-    }
-
-    public void set(String collection, Object key, Document document) {
-        setFinal(collection, key, document);
-    }
-
-    public void set(String collection, CaseInsensitiveString key, Document document) {
-        setFinal(collection, key, document);
-    }
-
-    private void setFinal(String collection, Object key, Document document) {
-        Document removed = removeData(collection, key);
-        if (removed != null) document.replace("key", removed.get("key"));
-        this.database.getCollection(collection).insertOne(document);
-    }
-
-    public Document removeData(String collection, Object key) {
-        return removeData(collection, "key", key);
-    }
-
-    public Document removeData(String collection, String keyName, Object key) {
-        DBObject dbObject = new BasicDBObject().append(keyName, key instanceof CaseInsensitiveString ? ((CaseInsensitiveString) key).compile() : key);
-        return this.database.getCollection(collection).findOneAndDelete((Bson) dbObject);
-    }
-
-    public boolean exists(String collection, Object key) {
-        return exists(collection, "key", key);
-    }
-
-    public boolean exists(String collection, String keyName, Object key) {
-        return getDocument(collection, keyName, key) != null;
-    }
-
-    public boolean exists(String collection, DBObject object) {
-        return database.getCollection(collection).find((Bson) object).first() != null;
-    }
-
-    public Integer getInt(String collection, Object key, Integer defaultValue) {
-        return getInt(collection, "key", key, "value", defaultValue);
-    }
-
-    public String getString(String collection, Object key, String defaultValue) {
-        return getString(collection, "key", key, "value", defaultValue);
-    }
-
-    public Boolean getBoolean(String collection, Object key, Boolean defaultValue) {
-        return getBoolean(collection, "key", key, "value", defaultValue);
-    }
-
-    public Double getDouble(String collection, Object key, Double defaultValue) {
-        return getDouble(collection, "key", key, "value", defaultValue);
-    }
-
-    public Float getFloat(String collection, Object key, Float defaultValue) {
-        return getFloat(collection, "key", key, "value", defaultValue);
-    }
-
-    public Integer getInt(String collection, String keyName, Object key, Integer defaultValue) {
-        return getInt(collection, keyName, key, "value", defaultValue);
-    }
-
-    public String getString(String collection, String keyName, Object key, String defaultValue) {
-        return getString(collection, keyName, key, "value", defaultValue);
-    }
-
-    public Boolean getBoolean(String collection, String keyName, Object key, Boolean defaultValue) {
-        return getBoolean(collection, keyName, key, "value", defaultValue);
-    }
-
-    public Double getDouble(String collection, String keyName, Object key, Double defaultValue) {
-        return getDouble(collection, keyName, key, "value", defaultValue);
-    }
-
-    public Float getFloat(String collection, String keyName, Object key, Float defaultValue) {
-        return getFloat(collection, keyName, key, "value", defaultValue);
-    }
-
-    public Integer getInt(String collection, String keyName, Object key, String value, Integer defaultValue) {
-        Document doc = getDocument(collection, keyName, key);
-        if (doc != null && doc.get(value) instanceof Integer) {
-            return (Integer) doc.get(value);
+        document = when (value) {
+            is MongoSObject -> document.append("value", value.toString())
+            else -> document.append("value", value)
         }
-        return defaultValue;
+
+        set(collection, key, document)
     }
 
-    public String getString(String collection, String keyName, Object key, String value, String defaultValue) {
-        Document doc = getDocument(collection, keyName, key);
-        if (doc != null && doc.get(value) instanceof String) {
-            return (String) doc.get(value);
+    fun set(collection: String, key: Any, document: Document) {
+        setFinal(collection, key, document)
+    }
+
+    fun set(collection: String, key: CaseInsensitiveString, document: Document) {
+        setFinal(collection, key, document)
+    }
+
+    fun setFinal(collection: String, key: Any, document: Document) {
+        val removed = removeData(collection, key)
+        if (removed != null) document.replace("key", removed["key"])
+        database!!.getCollection(collection).insertOne(document)
+    }
+
+    fun removeData(collection: String, key: Any): Document? {
+        return removeData(collection, "key", key)
+    }
+
+    fun removeData(collection: String, keyName: String, key: Any): Document? {
+        val dbObject = BasicDBObject().append(keyName, if (key is CaseInsensitiveString) key.compile() else key)
+        return database!!.getCollection(collection).findOneAndDelete(dbObject as Bson)
+    }
+
+    fun exists(collection: String, key: Any): Boolean {
+        return exists(collection, "key", key)
+    }
+
+    fun exists(collection: String, keyName: String, key: Any): Boolean {
+        return getDocument(collection, keyName, key) != null
+    }
+
+    fun exists(collection: String, dbObject: DBObject): Boolean {
+        return database!!.getCollection(collection).find(dbObject as Bson).first() != null
+    }
+
+    fun getValue(
+        collection: String,
+        keyName: String = "key",
+        key: Any,
+        value: String = "value",
+        defaultValue: Any?
+    ): Any? {
+        val document = getDocument(collection, keyName, key) ?: return defaultValue
+        return document[value]
+    }
+
+    fun getInt(collection: String, key: Any, defaultValue: Int): Int {
+        return getInt(collection, "key", key, "value", defaultValue)
+    }
+
+    fun getInt(collection: String, keyName: String = "key", key: Any, value: String = "value", defaultValue: Int): Int =
+        getValue(collection, keyName, key, value, defaultValue) as? Int ?: defaultValue
+
+
+    fun getString(collection: String, key: Any, defaultValue: String): String {
+        return getString(collection, "key", key, "value", defaultValue)
+    }
+
+    fun getString(
+        collection: String,
+        keyName: String = "key",
+        key: Any,
+        value: String = "value",
+        defaultValue: String
+    ): String =
+        getValue(collection, keyName, key, value, defaultValue) as? String ?: defaultValue
+
+
+    fun getDouble(
+        collection: String,
+        keyName: String = "key",
+        key: Any,
+        value: String = "value",
+        defaultValue: Double
+    ): Double =
+        getValue(collection, keyName, key, value, defaultValue) as? Double ?: defaultValue
+
+
+    fun getFloat(
+        collection: String,
+        keyName: String = "key",
+        key: Any,
+        value: String = "value",
+        defaultValue: Float
+    ): Float =
+        getValue(collection, keyName, key, value, defaultValue) as? Float ?: defaultValue
+
+
+    fun getBoolean(
+        collection: String,
+        keyName: String = "key",
+        key: Any,
+        value: String = "value",
+        defaultValue: Boolean
+    ): Boolean =
+        getValue(collection, keyName, key, value, defaultValue) as? Boolean ?: defaultValue
+
+    inline fun <reified T> getObjects(collection: String, keyName: String, key: Any): Array<T> {
+        val documents = getDocumentsAsList(collection, keyName, key)
+        val gson = Gson()
+        return Array(documents.size) { i -> gson.fromJson(documents[i].toJson(), T::class.java) }
+    }
+
+    inline fun <reified T> getObject(collection: String, key: Any): T? {
+        return getObject(collection, "key", key)
+    }
+
+    inline fun <reified T> getObject(collection: String, keyName: String, key: Any): T? {
+        val jsonString = getObjectJson(collection, keyName, key)
+        return Gson().fromJson(jsonString, T::class.java)
+    }
+
+    fun getObjectJson(collection: String, key: Any): String? {
+        return getObjectJson(collection, "key", key)
+    }
+
+    fun getObjectJson(collection: String, keyName: String, key: Any): String? {
+        val doc = getDocument(collection, keyName, key)
+        return doc?.toJson()
+    }
+
+    fun getDocument(collection: String, keyName: String, key: Any): Document? {
+        return getDocuments(collection, keyName, key).first()
+    }
+
+    fun getDocuments(collection: String, keyName: String, key: Any): FindIterable<Document> {
+        val dbObject: DBObject =
+            BasicDBObject().append(keyName, if (key is CaseInsensitiveString) key.compile() else key)
+        return database!!.getCollection(collection).find(dbObject as Bson)
+    }
+
+    fun getDocumentsAsList(collection: String, keyName: String, key: Any): ArrayList<Document> {
+        val docs = ArrayList<Document>()
+        for (document in getDocuments(collection, keyName, key)) {
+            docs.add(document)
         }
-        return defaultValue;
+        return docs
     }
 
-    public Double getDouble(String collection, String keyName, Object key, String value, Double defaultValue) {
-        Document doc = getDocument(collection, keyName, key);
-        if (doc != null && doc.get(value) instanceof Double) {
-            return (Double) doc.get(value);
-        }
-        return defaultValue;
+    inline fun <reified T> getList(collection: String, key: Any): List<T>? {
+        return getList(collection, "key", key)
     }
 
-    public Float getFloat(String collection, String keyName, Object key, String value, Float defaultValue) {
-        Document doc = getDocument(collection, keyName, key);
-        if (doc != null && doc.get(value) instanceof Float) {
-            return (Float) doc.get(value);
-        }
-        return defaultValue;
+    inline fun <reified T> getList(collection: String, keyName: String, key: Any): List<T>? {
+        return getList(collection, keyName, key, "value")
     }
 
-    public Boolean getBoolean(String collection, String keyName, Object key, String value, Boolean defaultValue) {
-        Document doc = getDocument(collection, keyName, key);
-        if (doc != null && doc.get(value) instanceof Boolean) {
-            return (Boolean) doc.get(value);
-        }
-        return defaultValue;
-    }
-
-    public <T> T[] getObjects(String collection, Class<T> classOff, String keyName, Object key) {
-        ArrayList<Document> objects = getDocumentsAsList(collection, keyName, key);
-        @SuppressWarnings("unchecked")
-        T[] objetsClass = (T[]) new Object[objects.size()];
-        for (int i = 0; i < objects.size(); i++) {
-            objetsClass[i] = new Gson().fromJson(objects.get(i).toJson(), classOff);
-        }
-        return objetsClass;
-    }
-
-    public <T> T getObject(String collection, Object key, Class<T> classOff) {
-        return getObject(collection, "key", key, classOff);
-    }
-
-    public <T> T getObject(String collection, String keyName, Object key, Class<T> classOff) {
-        return new Gson().fromJson(getString(collection, key, ""), classOff);
-    }
-
-    public String getObjectJson(String collection, Object key) {
-        return getObjectJson(collection, "key", key);
-    }
-
-    public String getObjectJson(String collection, String keyName, Object key) {
-        Document doc = getDocument(collection, keyName, key);
-        return doc == null ? "" : doc.toJson();
-    }
-
-    public Document getDocument(String collection, String keyName, Object key) {
-        return getDocuments(collection, keyName, key).first();
-    }
-
-    public FindIterable<Document> getDocuments(String collection, String keyName, Object key) {
-        DBObject dbObject = new BasicDBObject().append(keyName, key instanceof CaseInsensitiveString ? ((CaseInsensitiveString) key).compile() : key);
-        return this.database.getCollection(collection).find((Bson) dbObject);
-    }
-
-    public ArrayList<Document> getDocumentsAsList(String collection, String keyName, Object key) {
-        ArrayList<Document> docs = new ArrayList<>();
-        for (Document document : getDocuments(collection, keyName, key)) {
-            docs.add(document);
-        }
-        return docs;
-    }
-
-    public <T> List<T> getList(String collection, String keyName, Object key, Class<T> classOff) {
-        return getList(collection, keyName, key, "value", classOff);
-    }
-
-    public <T> List<T> getList(String collection, Object key, Class<T> classOff) {
-        return getList(collection, "key", key, "value", classOff);
-    }
-
-    public <T> List<T> getList(String collection, String keyName, Object key, String value, Class<T> classOff) {
+    inline fun <reified T> getList(collection: String, keyName: String, key: Any, value: String): List<T>? {
         if (exists(collection, keyName, key)) {
-            Document doc = getDocument(collection, keyName, key);
-            return doc.getList(value, classOff);
+            val doc = getDocument(collection, keyName, key)
+            return doc?.getList(value, T::class.java)
         } else {
-            return null;
+            return null
         }
     }
 }

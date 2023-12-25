@@ -4,6 +4,10 @@ Simple Mongo API
 
 ### Patch Notes
 
+- 4.2.1-BETA
+  - No description
+  
+
 - 4.1.1-BETA
    - No description
 

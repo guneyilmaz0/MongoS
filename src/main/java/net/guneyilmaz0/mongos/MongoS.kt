@@ -25,7 +25,7 @@ class MongoS : Database {
     }
 
     fun getCollection(collection: String): MongoCollection<Document> {
-        return database.getCollection(collection)
+        return database!!.getCollection(collection)
     }
 
     fun getAnotherDatabase(dataBase: String): Database {

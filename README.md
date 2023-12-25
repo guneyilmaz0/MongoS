@@ -21,8 +21,8 @@ Simple Mongo API
 ```
 ```kt
     val mongoS = MongoS("localhost", 27017, "test")
-    mongoS.set("collection", "guneyilmaz0", mongoSObject);
-    mongoS.set("collection", "guneyilmaz0", String.Companion::class.java);
+    mongoS.set("collection", "guneyilmaz0", mongoSObject)
+    mongoS.set("collection", "guneyilmaz0", String.Companion::class.java)
 ```
 
 ### Maven

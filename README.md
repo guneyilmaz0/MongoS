@@ -12,17 +12,17 @@ Simple Mongo API
  
 ### Usage
 
-```JAVA
-MongoS mongos = new MongoS("host", 27017, "DB");
-
-mongos.set("moneys", "SwadeDev0", 5);
-mongos.removeData("moneys", "SwadeDev0");
-mongos.getInt("moneys", "SwadeDev0"); #Integer
-mongos.exists("moneys", "SwadeDev0"); #Boolean
+```kt
+    val mongoS = MongoS("localhost", 27017, "test")
+    mongoS.set("moneys","guneyilmaz0", 5000)
+    mongoS.removeData("moneys", "SwadeDev0")
+    mongoS.getInt("moneys", "SwadeDev0", 0)
+    mongoS.exists("moneys", "SwadeDev0")
 ```
-```JAVA
-mongos.set("collection", YObject);
-mongo.set("collection", key, Object);
+```kt
+    val mongoS = MongoS("localhost", 27017, "test")
+    mongoS.set("collection", "guneyilmaz0", mongoSObject);
+    mongoS.set("collection", "guneyilmaz0", String.Companion::class.java);
 ```
 
 ### Maven

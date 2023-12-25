@@ -4,13 +4,12 @@ Simple Mongo API
 
 ### Patch Notes
 
-- 4.2.1-BETA
-  - No description
-  
+- 4.0.1-alpha
+  - Converted all files to Kotlin
+  - Optimized code
+  - Some classes moved into a single class
 
-- 4.1.1-BETA
-   - No description
-
+ 
 ### Usage
 
 ```JAVA

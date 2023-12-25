@@ -6,7 +6,7 @@
 
     <groupId>net.guneyilmaz0.mongos</groupId>
     <artifactId>MongoS</artifactId>
-    <version>4.2.1-BETA</version>
+    <version>4.0.1-alpha</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>

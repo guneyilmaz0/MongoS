@@ -8,6 +8,7 @@ import com.mongodb.client.MongoDatabase
 import org.bson.Document
 import org.bson.conversions.Bson
 
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 open class Database {
     var database: MongoDatabase? = null
 
@@ -64,28 +65,26 @@ open class Database {
         return database!!.getCollection(collection).find(dbObject as Bson).first() != null
     }
 
-    fun getValue(
+    fun getInt(collection: String, key: Any, defaultValue: Int): Int =
+        getInt(collection, "key", key, "value", defaultValue)
+
+    fun getInt(collection: String, keyName: String, key: Any, defaultValue: Int): Int =
+        getInt(collection, keyName, key, "value", defaultValue)
+
+    fun getInt(
         collection: String,
-        keyName: String = "key",
+        keyName: String,
         key: Any,
-        value: String = "value",
-        defaultValue: Any?
-    ): Any? {
-        val document = getDocument(collection, keyName, key) ?: return defaultValue
-        return document[value]
-    }
-
-    fun getInt(collection: String, key: Any, defaultValue: Int): Int {
-        return getInt(collection, "key", key, "value", defaultValue)
-    }
-
-    fun getInt(collection: String, keyName: String = "key", key: Any, value: String = "value", defaultValue: Int): Int =
+        value: String,
+        defaultValue: Int
+    ): Int =
         getValue(collection, keyName, key, value, defaultValue) as? Int ?: defaultValue
 
+    fun getString(collection: String, key: Any, defaultValue: String): String =
+        getString(collection, "key", key, "value", defaultValue)
 
-    fun getString(collection: String, key: Any, defaultValue: String): String {
-        return getString(collection, "key", key, "value", defaultValue)
-    }
+    fun getString(collection: String, keyName: String, key: Any, defaultValue: String): String =
+        getString(collection, keyName, key, "value", defaultValue)
 
     fun getString(
         collection: String,
@@ -96,6 +95,11 @@ open class Database {
     ): String =
         getValue(collection, keyName, key, value, defaultValue) as? String ?: defaultValue
 
+    fun getDouble(collection: String, key: Any, defaultValue: Double): Double =
+        getDouble(collection, "key", key, "value", defaultValue)
+
+    fun getDouble(collection: String, keyName: String, key: Any, defaultValue: Double): Double =
+        getDouble(collection, keyName, key, "value", defaultValue)
 
     fun getDouble(
         collection: String,
@@ -106,6 +110,11 @@ open class Database {
     ): Double =
         getValue(collection, keyName, key, value, defaultValue) as? Double ?: defaultValue
 
+    fun getFloat(collection: String, key: Any, defaultValue: Float): Float =
+        getFloat(collection, "key", key, "value", defaultValue)
+
+    fun getFloat(collection: String, keyName: String, key: Any, defaultValue: Float): Float =
+        getFloat(collection, keyName, key, "value", defaultValue)
 
     fun getFloat(
         collection: String,
@@ -116,6 +125,11 @@ open class Database {
     ): Float =
         getValue(collection, keyName, key, value, defaultValue) as? Float ?: defaultValue
 
+    fun getBoolean(collection: String, key: Any, defaultValue: Boolean): Boolean =
+        getBoolean(collection, "key", key, "value", defaultValue)
+
+    fun getBoolean(collection: String, keyName: String, key: Any, defaultValue: Boolean): Boolean =
+        getBoolean(collection, keyName, key, "value", defaultValue)
 
     fun getBoolean(
         collection: String,
@@ -125,6 +139,17 @@ open class Database {
         defaultValue: Boolean
     ): Boolean =
         getValue(collection, keyName, key, value, defaultValue) as? Boolean ?: defaultValue
+
+    fun getValue(
+        collection: String,
+        keyName: String = "key",
+        key: Any,
+        value: String = "value",
+        defaultValue: Any?
+    ): Any? {
+        val document = getDocument(collection, keyName, key) ?: return defaultValue
+        return document[value]
+    }
 
     inline fun <reified T> getObjects(collection: String, keyName: String, key: Any): Array<T> {
         val documents = getDocumentsAsList(collection, keyName, key)

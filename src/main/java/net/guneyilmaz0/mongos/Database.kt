@@ -151,19 +151,23 @@ open class Database {
         return document[value]
     }
 
-    inline fun <reified T> getObjects(collection: String, keyName: String, key: Any): Array<T> {
-        val documents = getDocumentsAsList(collection, keyName, key)
-        val gson = Gson()
-        return Array(documents.size) { i -> gson.fromJson(documents[i].toJson(), T::class.java) }
+    fun <T> getObjects(collection: String, classOff: Class<T>, keyName: String, key: Any): Array<T?> {
+        val objects = this.getDocumentsAsList(collection, keyName, key)
+        val objetsClass: Array<T?> = arrayOfNulls<Any>(objects.size) as Array<T?>
+
+        for (i in objects.indices) {
+            objetsClass[i] = Gson().fromJson(objects[i].toJson(), classOff)
+        }
+
+        return objetsClass
     }
 
-    inline fun <reified T> getObject(collection: String, key: Any): T? {
-        return getObject(collection, "key", key)
+    fun <T> getObject(collection: String, key: Any, classOff: Class<T>): T {
+        return this.getObject(collection, "key", key, classOff)
     }
 
-    inline fun <reified T> getObject(collection: String, keyName: String, key: Any): T? {
-        val jsonString = getObjectJson(collection, keyName, key)
-        return Gson().fromJson(jsonString, T::class.java)
+    fun <T> getObject(collection: String, keyName: String, key: Any, classOff: Class<T>): T {
+        return Gson().fromJson(this.getString(collection, key, ""), classOff)
     }
 
     fun getObjectJson(collection: String, key: Any): String? {
@@ -193,18 +197,18 @@ open class Database {
         return docs
     }
 
-    inline fun <reified T> getList(collection: String, key: Any): List<T>? {
-        return getList(collection, "key", key)
+    fun <T> getList(collection: String, keyName: String, key: Any, classOff: Class<T>): List<T>? {
+        return this.getList(collection, keyName, key, "value", classOff)
     }
 
-    inline fun <reified T> getList(collection: String, keyName: String, key: Any): List<T>? {
-        return getList(collection, keyName, key, "value")
+    fun <T> getList(collection: String, key: Any, classOff: Class<T>): List<T>? {
+        return this.getList(collection, "key", key, "value", classOff)
     }
 
-    inline fun <reified T> getList(collection: String, keyName: String, key: Any, value: String): List<T>? {
-        if (exists(collection, keyName, key)) {
-            val doc = getDocument(collection, keyName, key)
-            return doc?.getList(value, T::class.java)
+    fun <T> getList(collection: String, keyName: String, key: Any, value: String, classOff: Class<T>): List<T>? {
+        if (this.exists(collection, keyName, key)) {
+            val doc = this.getDocument(collection, keyName, key)
+            return doc!!.getList(value, classOff)
         } else {
             return null
         }

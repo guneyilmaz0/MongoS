@@ -4,6 +4,9 @@ Simple Mongo API
 
 ### Patch Notes
 
+- 4.0.2-alpha
+  - Fixed some bugs
+
 - 4.0.1-alpha
   - Converted all files to Kotlin
   - Optimized code

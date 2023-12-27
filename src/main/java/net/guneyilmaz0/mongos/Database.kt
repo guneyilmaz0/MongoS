@@ -65,7 +65,7 @@ open class Database {
         return database!!.getCollection(collection).find(dbObject as Bson).first() != null
     }
 
-    fun getInt(collection: String, key: Any, defaultValue: Int): Int =
+    fun getInt(collection: String, key: Any, defaultValue: Int = 0): Int =
         getInt(collection, "key", key, "value", defaultValue)
 
     fun getInt(collection: String, keyName: String, key: Any, defaultValue: Int): Int =
@@ -80,7 +80,7 @@ open class Database {
     ): Int =
         getValue(collection, keyName, key, value, defaultValue) as? Int ?: defaultValue
 
-    fun getString(collection: String, key: Any, defaultValue: String): String =
+    fun getString(collection: String, key: Any, defaultValue: String = ""): String =
         getString(collection, "key", key, "value", defaultValue)
 
     fun getString(collection: String, keyName: String, key: Any, defaultValue: String): String =
@@ -95,7 +95,7 @@ open class Database {
     ): String =
         getValue(collection, keyName, key, value, defaultValue) as? String ?: defaultValue
 
-    fun getDouble(collection: String, key: Any, defaultValue: Double): Double =
+    fun getDouble(collection: String, key: Any, defaultValue: Double = 0.0): Double =
         getDouble(collection, "key", key, "value", defaultValue)
 
     fun getDouble(collection: String, keyName: String, key: Any, defaultValue: Double): Double =
@@ -110,7 +110,7 @@ open class Database {
     ): Double =
         getValue(collection, keyName, key, value, defaultValue) as? Double ?: defaultValue
 
-    fun getFloat(collection: String, key: Any, defaultValue: Float): Float =
+    fun getFloat(collection: String, key: Any, defaultValue: Float = 0f): Float =
         getFloat(collection, "key", key, "value", defaultValue)
 
     fun getFloat(collection: String, keyName: String, key: Any, defaultValue: Float): Float =
@@ -125,7 +125,23 @@ open class Database {
     ): Float =
         getValue(collection, keyName, key, value, defaultValue) as? Float ?: defaultValue
 
-    fun getBoolean(collection: String, key: Any, defaultValue: Boolean): Boolean =
+    fun getLong(collection: String, key: Any, defaultValue: Long = 0): Long =
+            getLong(collection, "key", key, "value", defaultValue)
+
+    fun getLong(collection: String, keyName: String, key: Any, defaultValue: Long): Long =
+            getLong(collection, keyName, key, "value", defaultValue)
+
+    fun getLong(
+            collection: String,
+            keyName: String,
+            key: Any,
+            value: String,
+            defaultValue: Long
+    ): Long =
+            getValue(collection, keyName, key, value, defaultValue) as? Long ?: defaultValue
+
+
+    fun getBoolean(collection: String, key: Any, defaultValue: Boolean = false): Boolean =
         getBoolean(collection, "key", key, "value", defaultValue)
 
     fun getBoolean(collection: String, keyName: String, key: Any, defaultValue: Boolean): Boolean =

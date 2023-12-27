@@ -4,6 +4,9 @@ Simple Mongo API
 
 ### Patch Notes
 
+- 4.0.3-alpha
+  - Some improvements & getLong() function
+  - 
 - 4.0.2-alpha
   - Fixed some bugs
 

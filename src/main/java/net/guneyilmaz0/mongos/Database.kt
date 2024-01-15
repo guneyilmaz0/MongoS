@@ -30,13 +30,9 @@ open class Database {
         set(collection, key, document)
     }
 
-    fun set(collection: String, key: Any, document: Document) {
-        setFinal(collection, key, document)
-    }
+    fun set(collection: String, key: Any, document: Document) = setFinal(collection, key, document)
 
-    fun set(collection: String, key: CaseInsensitiveString, document: Document) {
-        setFinal(collection, key, document)
-    }
+    fun set(collection: String, key: CaseInsensitiveString, document: Document) = setFinal(collection, key, document)
 
     fun setFinal(collection: String, key: Any, document: Document) {
         val removed = removeData(collection, key)
@@ -44,26 +40,19 @@ open class Database {
         database!!.getCollection(collection).insertOne(document)
     }
 
-    fun removeData(collection: String, key: Any): Document? {
-        return removeData(collection, "key", key)
-    }
+    fun removeData(collection: String, key: Any): Document? = removeData(collection, "key", key)
 
     fun removeData(collection: String, keyName: String, key: Any): Document? {
         val dbObject = BasicDBObject().append(keyName, if (key is CaseInsensitiveString) key.compile() else key)
         return database!!.getCollection(collection).findOneAndDelete(dbObject as Bson)
     }
 
-    fun exists(collection: String, key: Any): Boolean {
-        return exists(collection, "key", key)
-    }
+    fun exists(collection: String, key: Any): Boolean = exists(collection, "key", key)
 
-    fun exists(collection: String, keyName: String, key: Any): Boolean {
-        return getDocument(collection, keyName, key) != null
-    }
+    fun exists(collection: String, keyName: String, key: Any): Boolean = getDocument(collection, keyName, key) != null
 
-    fun exists(collection: String, dbObject: DBObject): Boolean {
-        return database!!.getCollection(collection).find(dbObject as Bson).first() != null
-    }
+    fun exists(collection: String, dbObject: DBObject): Boolean =
+         database!!.getCollection(collection).find(dbObject as Bson).first() != null
 
     fun getInt(collection: String, key: Any, defaultValue: Int = 0): Int =
         getInt(collection, "key", key, "value", defaultValue)
@@ -178,26 +167,24 @@ open class Database {
         return objetsClass
     }
 
-    fun <T> getObject(collection: String, key: Any, classOff: Class<T>): T {
-        return this.getObject(collection, "key", key, classOff)
-    }
+    fun <T> getObject(collection: String, key: Any, classOff: Class<T>): T =
+        this.getObject(collection, "key", key, classOff)
 
-    fun <T> getObject(collection: String, keyName: String, key: Any, classOff: Class<T>): T {
-        return Gson().fromJson(this.getString(collection, key, ""), classOff)
-    }
 
-    fun getObjectJson(collection: String, key: Any): String? {
-        return getObjectJson(collection, "key", key)
-    }
+    fun <T> getObject(collection: String, keyName: String, key: Any, classOff: Class<T>): T =
+        Gson().fromJson(this.getString(collection, key, ""), classOff)
+
+
+    fun getObjectJson(collection: String, key: Any): String? = getObjectJson(collection, "key", key)
 
     fun getObjectJson(collection: String, keyName: String, key: Any): String? {
         val doc = getDocument(collection, keyName, key)
         return doc?.toJson()
     }
 
-    fun getDocument(collection: String, keyName: String, key: Any): Document? {
-        return getDocuments(collection, keyName, key).first()
-    }
+    fun getDocument(collection: String, keyName: String, key: Any): Document? =
+        getDocuments(collection, keyName, key).first()
+
 
     fun getDocuments(collection: String, keyName: String, key: Any): FindIterable<Document> {
         val dbObject: DBObject =

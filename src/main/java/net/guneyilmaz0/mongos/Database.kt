@@ -172,7 +172,7 @@ open class Database {
 
 
     fun <T> getObject(collection: String, keyName: String, key: Any, classOff: Class<T>): T =
-        Gson().fromJson(this.getString(collection, key, ""), classOff)
+        Gson().fromJson(this.getString(collection, keyName, key, ""), classOff)
 
 
     fun getObjectJson(collection: String, key: Any): String? = getObjectJson(collection, "key", key)

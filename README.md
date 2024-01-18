@@ -4,6 +4,11 @@ Simple Mongo API
 
 ### Patch Notes
 
+- 4.1.1
+  - Fixed some bugs
+  - Updated to MongoDB 4.11.1
+  - Added watchCollection() function
+
 - 4.0.3-alpha
   - Some improvements & getLong() function
 

@@ -35,9 +35,8 @@ class MongoS : Database {
         return db
     }
 
-    fun watchCollection(collection: String): ChangeStreamIterable<Document> {
-        return getCollection(collection).watch()
-    }
+    fun watchCollection(collection: String): ChangeStreamIterable<Document> = getCollection(collection).watch()
+
 }
 
 class CaseInsensitiveString(private val string: String) {

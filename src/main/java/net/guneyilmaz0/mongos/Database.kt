@@ -153,9 +153,7 @@ open class Database {
     fun <T> getObjects(collection: String, classOff: Class<T>, keyName: String, key: Any): Array<T?> {
         val objects = this.getDocumentsAsList(collection, keyName, key)
         val objetsClass: Array<T?> = arrayOfNulls<Any>(objects.size) as Array<T?>
-
         for (i in objects.indices) objetsClass[i] = Gson().fromJson(objects[i].toJson(), classOff)
-
         return objetsClass
     }
 

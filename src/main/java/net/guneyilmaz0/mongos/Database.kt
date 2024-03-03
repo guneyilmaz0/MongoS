@@ -7,6 +7,7 @@ import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoDatabase
 import org.bson.Document
 import org.bson.conversions.Bson
+import java.util.Objects
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 open class Database {
@@ -53,6 +54,18 @@ open class Database {
 
     fun exists(collection: String, dbObject: DBObject): Boolean =
         database!!.getCollection(collection).find(dbObject as Bson).first() != null
+
+    fun getKeys(collection: String) : List<String> {
+        val keys = ArrayList<String>()
+        for (document in database!!.getCollection(collection).find()) keys.add(document["key"].toString())
+        return keys
+    }
+
+    fun getAll(collection: String): Map<String, Any>{
+        val map = HashMap<String, Any>()
+        for (document in database!!.getCollection(collection).find()) map[document["key"].toString()] = document["value"]!!
+        return map
+    }
 
     fun getInt(collection: String, key: Any, defaultValue: Int = 0): Int =
         getInt(collection, "key", key, "value", defaultValue)

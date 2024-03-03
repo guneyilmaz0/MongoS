@@ -4,6 +4,9 @@ Simple Mongo API
 
 ### Patch Notes
 
+- 4.1.2
+  - Added getKeys() & getAll() functions
+
 - 4.1.1
   - Fixed some bugs
   - Updated to MongoDB 4.11.1

@@ -143,7 +143,6 @@ open class Database {
         defaultValue: Long
     ): Long = getValue(collection, keyName, key, value, defaultValue) as? Long ?: defaultValue
 
-
     fun getBoolean(collection: String, key: Any, defaultValue: Boolean = false): Boolean =
         getBoolean(collection, "key", key, "value", defaultValue)
 
@@ -178,7 +177,6 @@ open class Database {
 
     fun <T> getObject(collection: String, key: Any, classOff: Class<T>): T =
         this.getObject(collection, "key", key, classOff)
-
 
     fun <T> getObject(collection: String, keyName: String, key: Any, classOff: Class<T>): T =
         Gson().fromJson(this.getString(collection, keyName, key, ""), classOff)

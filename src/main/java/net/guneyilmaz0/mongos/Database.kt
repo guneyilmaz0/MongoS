@@ -16,7 +16,7 @@ open class Database {
 
     open fun init(database: MongoDatabase?) {
         this.database = database
-        setLogLevel(Level.SEVERE)
+        setLogLevel(Level.INFO)
     }
 
     fun setLogLevel(level:Level) {

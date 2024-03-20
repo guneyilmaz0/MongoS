@@ -7,6 +7,7 @@ Simple Mongo API
 - 4.1.3
   - Added update function
   - Improved getObjects function
+  - Added changing log level
 
 - 4.1.2
   - Added getKeys() & getAll() functions

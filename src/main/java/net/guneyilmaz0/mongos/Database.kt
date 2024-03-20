@@ -169,11 +169,11 @@ open class Database {
         return document[value]
     }
 
-    fun <T> getObjects(collection: String, classOff: Class<T>, keyName: String, key: Any): Array<T?> {
+    fun <T> getObjects(collection: String, classOff: Class<T>, keyName: String, key: Any): List<T?> {
         val objects = this.getDocumentsAsList(collection, keyName, key)
-        val objetsClass: Array<T?> = arrayOfNulls<Any>(objects.size) as Array<T?>
-        for (i in objects.indices) objetsClass[i] = Gson().fromJson(objects[i].toJson(), classOff)
-        return objetsClass
+        val objectsClass = mutableListOf<T?>()
+        for (document in objects) objectsClass.add(Gson().fromJson(document.toJson(), classOff))
+        return objectsClass
     }
 
     fun <T> getObject(collection: String, key: Any, classOff: Class<T>): T =

@@ -7,6 +7,8 @@ import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoDatabase
 import org.bson.Document
 import org.bson.conversions.Bson
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 open class Database {
@@ -14,6 +16,11 @@ open class Database {
 
     open fun init(database: MongoDatabase?) {
         this.database = database
+        setLogLevel(Level.SEVERE)
+    }
+
+    fun setLogLevel(level:Level) {
+        Logger.getLogger("org.mongodb.driver").level = level
     }
 
     fun set(collection: String, key: Any, value: Any) {

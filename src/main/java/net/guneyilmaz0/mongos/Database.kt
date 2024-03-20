@@ -7,7 +7,6 @@ import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoDatabase
 import org.bson.Document
 import org.bson.conversions.Bson
-import java.util.Objects
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 open class Database {
@@ -41,6 +40,12 @@ open class Database {
         database!!.getCollection(collection).insertOne(document)
     }
 
+    fun update(collection: String, key: Any, newValue: Any) {
+        val filter = BasicDBObject().append("key", if (key is CaseInsensitiveString) key.compile() else key)
+        val update = BasicDBObject().append("\$set", BasicDBObject().append("value", newValue))
+        database!!.getCollection(collection).updateOne(filter as Bson, update as Bson)
+    }
+
     fun removeData(collection: String, key: Any): Document? = removeData(collection, "key", key)
 
     fun removeData(collection: String, keyName: String, key: Any): Document? {
@@ -55,15 +60,16 @@ open class Database {
     fun exists(collection: String, dbObject: DBObject): Boolean =
         database!!.getCollection(collection).find(dbObject as Bson).first() != null
 
-    fun getKeys(collection: String) : List<String> {
+    fun getKeys(collection: String): List<String> {
         val keys = ArrayList<String>()
         for (document in database!!.getCollection(collection).find()) keys.add(document["key"].toString())
         return keys
     }
 
-    fun getAll(collection: String): Map<String, Any>{
+    fun getAll(collection: String): Map<String, Any> {
         val map = HashMap<String, Any>()
-        for (document in database!!.getCollection(collection).find()) map[document["key"].toString()] = document["value"]!!
+        for (document in database!!.getCollection(collection).find()) map[document["key"].toString()] =
+            document["value"]!!
         return map
     }
 

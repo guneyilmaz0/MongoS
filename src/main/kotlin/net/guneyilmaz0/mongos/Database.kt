@@ -7,16 +7,16 @@ import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoDatabase
 import org.bson.Document
 import org.bson.conversions.Bson
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.logging.Level
+import java.util.logging.Logger
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 open class Database {
     var database: MongoDatabase? = null
 
     open fun init(database: MongoDatabase?) {
-        this.database = database
         setLogLevel(Level.INFO)
+        this.database = database
     }
 
     fun setLogLevel(level:Level) {

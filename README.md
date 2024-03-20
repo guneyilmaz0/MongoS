@@ -4,6 +4,10 @@ Simple Mongo API
 
 ### Patch Notes
 
+- 4.1.3
+  - Added update function
+  - Improved getObjects function
+
 - 4.1.2
   - Added getKeys() & getAll() functions
 

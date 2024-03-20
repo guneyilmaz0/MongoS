@@ -8,7 +8,7 @@ import com.mongodb.client.ChangeStreamIterable
 import org.bson.Document
 import java.util.regex.Pattern
 
-@Suppress("unused")
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 class MongoS : Database {
     private val mongo: MongoClient
 

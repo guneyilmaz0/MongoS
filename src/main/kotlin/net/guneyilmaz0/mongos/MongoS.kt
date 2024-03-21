@@ -38,11 +38,3 @@ class MongoS : Database {
     fun watchCollection(collection: String): ChangeStreamIterable<Document> = getCollection(collection).watch()
 
 }
-
-class CaseInsensitiveString(private val string: String) {
-    fun compile(): Pattern = Pattern.compile(string, Pattern.CASE_INSENSITIVE)
-}
-
-abstract class MongoSObject {
-    override fun toString(): String = Gson().toJson(this)
-}

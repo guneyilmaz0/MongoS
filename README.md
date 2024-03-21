@@ -1,8 +1,11 @@
 # MongoS
 Simple Mongo API
 
-
+### Latest version: 4.1.4
 ### Patch Notes
+
+- 4.1.4
+   - "No information"
 
 - 4.1.3
   - Added update function

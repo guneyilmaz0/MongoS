@@ -23,7 +23,7 @@ class MongoS : Database {
     }
 
     constructor(dbName: String) {
-        mongo = MongoClients.create("mongodb://localhost:27017")
+        mongo = MongoClients.create()
         init(mongo.getDatabase(dbName))
     }
 

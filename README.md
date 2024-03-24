@@ -4,6 +4,9 @@ Simple Mongo API
 ### Latest version: 4.1.4
 ### Patch Notes
 
+- 4.1.5
+   - Added renameKey() & setIfNotExists() functions
+
 - 4.1.4
    - "No information"
 

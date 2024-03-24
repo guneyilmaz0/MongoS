@@ -19,7 +19,7 @@ open class Database {
         this.database = database
     }
 
-    fun setLogLevel(level:Level) {
+    fun setLogLevel(level: Level) {
         Logger.getLogger("org.mongodb.driver").level = level
     }
 
@@ -45,6 +45,26 @@ open class Database {
         val removed = removeData(collection, key)
         if (removed != null) document.replace("key", removed["key"])
         database!!.getCollection(collection).insertOne(document)
+    }
+
+    fun setIfNotExists(collection: String, key: Any, value: Any) {
+        if (!exists(collection, key)) set(collection, key, value)
+    }
+
+    fun renameKey(collection: String, oldKey: Any, newKey: Any) {
+        return renameKey(collection, "key", oldKey, newKey)
+    }
+
+    fun renameKey(collection: String, keyName: String, oldKey: Any, newKey: Any) {
+        var document = getDocument(collection, keyName, oldKey)
+        if (document != null) {
+            removeData(collection, oldKey)
+            document = when (newKey) {
+                is CaseInsensitiveString -> document.append("key", newKey.compile())
+                else -> document.append("key", newKey)
+            }
+            set(collection, newKey, document)
+        }
     }
 
     fun update(collection: String, key: Any, newValue: Any) {
@@ -191,8 +211,7 @@ open class Database {
     fun getObjectJson(collection: String, key: Any): String? = getObjectJson(collection, "key", key)
 
     fun getObjectJson(collection: String, keyName: String, key: Any): String? {
-        val doc = getDocument(collection, keyName, key)
-        return doc?.toJson()
+        return getDocument(collection, keyName, key)?.toJson()
     }
 
     fun getDocument(collection: String, keyName: String, key: Any): Document? =

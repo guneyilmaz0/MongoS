@@ -1,12 +1,10 @@
 package net.guneyilmaz0.mongos
 
-import com.google.gson.Gson
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoClients
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.ChangeStreamIterable
 import org.bson.Document
-import java.util.regex.Pattern
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class MongoS : Database {

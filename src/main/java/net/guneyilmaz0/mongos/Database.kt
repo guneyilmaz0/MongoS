@@ -47,6 +47,10 @@ open class Database {
         database!!.getCollection(collection).insertOne(document)
     }
 
+    fun setMany(collection: String, documents: List<Document>) {
+        database!!.getCollection(collection).insertMany(documents)
+    }
+
     fun setIfNotExists(collection: String, key: Any, value: Any) {
         if (!exists(collection, key)) set(collection, key, value)
     }

@@ -39,7 +39,7 @@ open class Database {
 
     fun set(collection: String, key: Any, document: Document) = setFinal(collection, key, document)
 
-    fun set(collection: String, key: CaseInsensitiveString, document: Document) = setFinal(collection, key, document)
+    fun set(collection: String, key: CaseInsensitiveString, document: Document) = setFinal(collection, key.compile(), document)
 
     fun setFinal(collection: String, key: Any, document: Document) {
         val removed = removeData(collection, key)

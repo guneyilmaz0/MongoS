@@ -1,8 +1,11 @@
 # MongoS
 Simple Mongo API
 
-### Latest version: 4.2.1
+### Latest version: 4.2.2
 ### Patch Notes
+
+- 4.2.2
+  - Log4j2 
 
 - 4.2.1
    - Some changes on project directory

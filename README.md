@@ -1,8 +1,11 @@
 # MongoS
 Simple Mongo API
 
-### Latest version: 4.1.4
+### Latest version: 4.2.1
 ### Patch Notes
+
+- 4.2.1
+   - Some changes on project directory
 
 - 4.1.5
    - Added renameKey() & setIfNotExists() functions

@@ -5,25 +5,21 @@ import com.mongodb.BasicDBObject
 import com.mongodb.DBObject
 import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoDatabase
+import kotlinx.coroutines.*
 import org.bson.Document
 import org.bson.conversions.Bson
-import java.util.logging.Level
-import java.util.logging.Logger
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 open class Database {
     var database: MongoDatabase? = null
 
     open fun init(database: MongoDatabase?) {
-        setLogLevel(Level.INFO)
         this.database = database
     }
 
-    fun setLogLevel(level: Level) {
-        Logger.getLogger("org.mongodb.driver").level = level
-    }
+    fun set(collection: String, key: Any, value: Any) = set(collection, key, value, false)
 
-    fun set(collection: String, key: Any, value: Any) {
+    fun set(collection: String, key: Any, value: Any, async: Boolean = false) {
         var document: Document = when (key) {
             is CaseInsensitiveString -> Document().append("key", key.compile())
             else -> Document().append("key", key)
@@ -34,17 +30,30 @@ open class Database {
             else -> document.append("value", value)
         }
 
-        set(collection, key, document)
+        set(collection, key, document, async)
     }
 
-    fun set(collection: String, key: Any, document: Document) = setFinal(collection, key, document)
+    fun set(collection: String, key: Any, document: Document, async: Boolean = false) =
+        setFinal(collection, key, document, async)
 
-    fun set(collection: String, key: CaseInsensitiveString, document: Document) = setFinal(collection, key.compile(), document)
+    fun set(collection: String, key: CaseInsensitiveString, document: Document, async: Boolean = false) =
+        setFinal(collection, key.compile(), document, async)
 
-    fun setFinal(collection: String, key: Any, document: Document) {
-        val removed = removeData(collection, key)
-        if (removed != null) document.replace("key", removed["key"])
-        database!!.getCollection(collection).insertOne(document)
+    fun setFinal(collection: String, key: Any, document: Document, async: Boolean = false) {
+        if (async) runBlocking { setFinalSuspend(collection, key, document) }
+        else {
+            val removed = removeData(collection, key)
+            if (removed != null) document.replace("key", removed["key"])
+            database!!.getCollection(collection).insertOne(document)
+        }
+    }
+
+    suspend fun setFinalSuspend(collection: String, key: Any, document: Document) {
+        coroutineScope {
+            val removed = removeData(collection, key)
+            if (removed != null) document.replace("key", removed["key"])
+            database!!.getCollection(collection).insertOne(document)
+        }
     }
 
     fun setMany(collection: String, documents: List<Document>) {

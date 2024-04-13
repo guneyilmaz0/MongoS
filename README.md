@@ -1,8 +1,11 @@
 # MongoS
 Simple Mongo API
 
-### Latest version: 4.2.2
+### Latest version: 4.2.3
 ### Patch Notes
+
+- 4.2.3
+  - setFinal suspend function added
 
 - 4.2.2
   - Log4j2 

@@ -2,47 +2,6 @@
 Simple Mongo API
 
 ### Latest version: 4.2.3
-### Patch Notes
-
-- 4.2.3
-  - setFinal suspend function added
-
-- 4.2.2
-  - Log4j2 
-
-- 4.2.1
-   - Some changes on project directory
-
-- 4.1.5
-   - Added renameKey() & setIfNotExists() functions
-
-- 4.1.4
-   - "No information"
-
-- 4.1.3
-  - Added update function
-  - Improved getObjects function
-  - Added changing log level
-
-- 4.1.2
-  - Added getKeys() & getAll() functions
-
-- 4.1.1
-  - Fixed some bugs
-  - Updated to MongoDB 4.11.1
-  - Added watchCollection() function
-
-- 4.0.3-alpha
-  - Some improvements & getLong() function
-
-- 4.0.2-alpha
-  - Fixed some bugs
-
-- 4.0.1-alpha
-  - Converted all files to Kotlin
-  - Optimized code
-  - Some classes moved into a single class
-
  
 ### Usage
 

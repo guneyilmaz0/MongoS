@@ -46,18 +46,17 @@ open class Database {
      * @param async whether the operation should be asynchronous.
      */
     fun set(collection: String, key: Any, value: Any, async: Boolean = false) {
-        var document: Document = when (key) {
-            is CaseInsensitiveString -> Document().append("key", key.compile())
-            else -> Document().append("key", key)
+        val keyDocument = Document().apply {
+            append("key", if (key is CaseInsensitiveString) key.compile() else key)
         }
 
-        document = when (value) {
-            is MongoSObject -> document.append("value", value.toString())
-            else -> document.append("value", value)
+        val finalDocument = keyDocument.apply {
+            append("value", if (value is MongoSObject) value.toString() else value)
         }
 
-        set(collection, key, document, async)
+        set(collection, key, finalDocument, async)
     }
+
 
     /**
      * Sets a document in the specified collection with the provided key and document.

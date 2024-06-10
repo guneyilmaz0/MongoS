@@ -9,16 +9,42 @@ import kotlinx.coroutines.*
 import org.bson.Document
 import org.bson.conversions.Bson
 
+/**
+ * This class represents a MongoDB database.
+ * It provides methods to initialize the database, set and get values, update and remove data, and check if data exists.
+ *
+ * @property database the MongoDB database instance.
+ */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 open class Database {
     var database: MongoDatabase? = null
 
+    /**
+     * Initializes the database with the specified MongoDB database instance.
+     *
+     * @param database the MongoDB database instance.
+     */
     open fun init(database: MongoDatabase?) {
         this.database = database
     }
 
+    /**
+     * Sets a value in the specified collection with the provided key and value.
+     *
+     * @param collection the collection name.
+     * @param key the key for the value.
+     * @param value the value to set.
+     */
     fun set(collection: String, key: Any, value: Any) = set(collection, key, value, false)
 
+    /**
+     * Sets a value in the specified collection with the provided key and value.
+     *
+     * @param collection the collection name.
+     * @param key the key for the value.
+     * @param value the value to set.
+     * @param async whether the operation should be asynchronous.
+     */
     fun set(collection: String, key: Any, value: Any, async: Boolean = false) {
         var document: Document = when (key) {
             is CaseInsensitiveString -> Document().append("key", key.compile())
@@ -33,12 +59,36 @@ open class Database {
         set(collection, key, document, async)
     }
 
+    /**
+     * Sets a document in the specified collection with the provided key and document.
+     *
+     * @param collection the collection name.
+     * @param key the key for the document.
+     * @param document the document to set.
+     * @param async whether the operation should be asynchronous.
+     */
     fun set(collection: String, key: Any, document: Document, async: Boolean = false) =
         setFinal(collection, key, document, async)
 
+    /**
+     * Sets a document in the specified collection with the provided key and document.
+     *
+     * @param collection the collection name.
+     * @param key the key for the document.
+     * @param document the document to set.
+     * @param async whether the operation should be asynchronous.
+     */
     fun set(collection: String, key: CaseInsensitiveString, document: Document, async: Boolean = false) =
         setFinal(collection, key.compile(), document, async)
 
+    /**
+     * Final method to set a document in the specified collection with the provided key and document.
+     *
+     * @param collection the collection name.
+     * @param key the key for the document.
+     * @param document the document to set.
+     * @param async whether the operation should be asynchronous.
+     */
     fun setFinal(collection: String, key: Any, document: Document, async: Boolean = false) {
         if (async) runBlocking { setFinalSuspend(collection, key, document) }
         else {
@@ -48,6 +98,13 @@ open class Database {
         }
     }
 
+    /**
+     * Suspended method to set a document in the specified collection with the provided key and document asynchronously.
+     *
+     * @param collection the collection name.
+     * @param key the key for the document.
+     * @param document the document to set.
+     */
     suspend fun setFinalSuspend(collection: String, key: Any, document: Document) {
         coroutineScope {
             val removed = removeData(collection, key)
@@ -56,18 +113,46 @@ open class Database {
         }
     }
 
+    /**
+     * Sets multiple documents in the specified collection.
+     *
+     * @param collection the collection name.
+     * @param documents the list of documents to set.
+     */
     fun setMany(collection: String, documents: List<Document>) {
         database!!.getCollection(collection).insertMany(documents)
     }
 
+    /**
+     * Sets a value in the specified collection with the provided key and value if the key does not already exist.
+     *
+     * @param collection the collection name.
+     * @param key the key for the value.
+     * @param value the value to set.
+     */
     fun setIfNotExists(collection: String, key: Any, value: Any) {
         if (!exists(collection, key)) set(collection, key, value)
     }
 
+    /**
+     * Renames a key in the specified collection.
+     *
+     * @param collection the collection name.
+     * @param oldKey the old key.
+     * @param newKey the new key.
+     */
     fun renameKey(collection: String, oldKey: Any, newKey: Any) {
         return renameKey(collection, "key", oldKey, newKey)
     }
 
+    /**
+     * Renames a key in the specified collection.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param oldKey the old key.
+     * @param newKey the new key.
+     */
     fun renameKey(collection: String, keyName: String, oldKey: Any, newKey: Any) {
         var document = getDocument(collection, keyName, oldKey)
         if (document != null) {
@@ -80,32 +165,88 @@ open class Database {
         }
     }
 
+    /**
+     * Updates a value in the specified collection with the provided key and new value.
+     *
+     * @param collection the collection name.
+     * @param key the key for the value.
+     * @param newValue the new value to set.
+     */
     fun update(collection: String, key: Any, newValue: Any) {
         val filter = BasicDBObject().append("key", if (key is CaseInsensitiveString) key.compile() else key)
         val update = BasicDBObject().append("\$set", BasicDBObject().append("value", newValue))
         database!!.getCollection(collection).updateOne(filter as Bson, update as Bson)
     }
 
+    /**
+     * Removes a document from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param key the key for the document.
+     * @return the removed document.
+     */
     fun removeData(collection: String, key: Any): Document? = removeData(collection, "key", key)
 
+    /**
+     * Removes a document from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param key the key for the document.
+     * @return the removed document.
+     */
     fun removeData(collection: String, keyName: String, key: Any): Document? {
         val dbObject = BasicDBObject().append(keyName, if (key is CaseInsensitiveString) key.compile() else key)
         return database!!.getCollection(collection).findOneAndDelete(dbObject as Bson)
     }
 
+    /**
+     * Checks if a document exists in the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param key the key for the document.
+     * @return true if the document exists, false otherwise.
+     */
     fun exists(collection: String, key: Any): Boolean = exists(collection, "key", key)
 
+    /**
+     * Checks if a document exists in the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param key the key for the document.
+     * @return true if the document exists, false otherwise.
+     */
     fun exists(collection: String, keyName: String, key: Any): Boolean = getDocument(collection, keyName, key) != null
 
+    /**
+     * Checks if a document exists in the specified collection with the provided DBObject.
+     *
+     * @param collection the collection name.
+     * @param dbObject the DBObject to check.
+     * @return true if the document exists, false otherwise.
+     */
     fun exists(collection: String, dbObject: DBObject): Boolean =
         database!!.getCollection(collection).find(dbObject as Bson).first() != null
 
+    /**
+     * Gets all keys in the specified collection.
+     *
+     * @param collection the collection name.
+     * @return a list of keys.
+     */
     fun getKeys(collection: String): List<String> {
         val keys = ArrayList<String>()
         for (document in database!!.getCollection(collection).find()) keys.add(document["key"].toString())
         return keys
     }
 
+    /**
+     * Gets all documents in the specified collection as a map.
+     *
+     * @param collection the collection name.
+     * @return a map of keys and values.
+     */
     fun getAll(collection: String): Map<String, Any> {
         val map = HashMap<String, Any>()
         for (document in database!!.getCollection(collection).find()) map[document["key"].toString()] =
@@ -113,12 +254,39 @@ open class Database {
         return map
     }
 
+    /**
+     * Gets an integer value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param key the key for the value.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the integer value.
+     */
     fun getInt(collection: String, key: Any, defaultValue: Int = 0): Int =
         getInt(collection, "key", key, "value", defaultValue)
 
+    /**
+     * Gets an integer value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param key the key for the value.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the integer value.
+     */
     fun getInt(collection: String, keyName: String, key: Any, defaultValue: Int): Int =
         getInt(collection, keyName, key, "value", defaultValue)
 
+    /**
+     * Gets an integer value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param key the key for the value.
+     * @param value the value field.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the integer value.
+     */
     fun getInt(
         collection: String,
         keyName: String,
@@ -127,12 +295,39 @@ open class Database {
         defaultValue: Int
     ): Int = getValue(collection, keyName, key, value, defaultValue) as? Int ?: defaultValue
 
+    /**
+     * Gets a string value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param key the key for the value.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the string value.
+     */
     fun getString(collection: String, key: Any, defaultValue: String = ""): String =
         getString(collection, "key", key, "value", defaultValue)
 
+    /**
+     * Gets a string value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param key the key for the value.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the string value.
+     */
     fun getString(collection: String, keyName: String, key: Any, defaultValue: String): String =
         getString(collection, keyName, key, "value", defaultValue)
 
+    /**
+     * Gets a string value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param key the key for the value.
+     * @param value the value field.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the string value.
+     */
     fun getString(
         collection: String,
         keyName: String = "key",
@@ -141,12 +336,39 @@ open class Database {
         defaultValue: String
     ): String = getValue(collection, keyName, key, value, defaultValue) as? String ?: defaultValue
 
+    /**
+     * Gets a double value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param key the key for the value.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the double value.
+     */
     fun getDouble(collection: String, key: Any, defaultValue: Double = 0.0): Double =
         getDouble(collection, "key", key, "value", defaultValue)
 
+    /**
+     * Gets a double value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param key the key for the value.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the double value.
+     */
     fun getDouble(collection: String, keyName: String, key: Any, defaultValue: Double): Double =
         getDouble(collection, keyName, key, "value", defaultValue)
 
+    /**
+     * Gets a double value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param key the key for the value.
+     * @param value the value field.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the double value.
+     */
     fun getDouble(
         collection: String,
         keyName: String = "key",
@@ -155,12 +377,39 @@ open class Database {
         defaultValue: Double
     ): Double = getValue(collection, keyName, key, value, defaultValue) as? Double ?: defaultValue
 
+    /**
+     * Gets a float value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param key the key for the value.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the float value.
+     */
     fun getFloat(collection: String, key: Any, defaultValue: Float = 0f): Float =
         getFloat(collection, "key", key, "value", defaultValue)
 
+    /**
+     * Gets a float value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param key the key for the value.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the float value.
+     */
     fun getFloat(collection: String, keyName: String, key: Any, defaultValue: Float): Float =
         getFloat(collection, keyName, key, "value", defaultValue)
 
+    /**
+     * Gets a float value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param key the key for the value.
+     * @param value the value field.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the float value.
+     */
     fun getFloat(
         collection: String,
         keyName: String = "key",
@@ -169,12 +418,39 @@ open class Database {
         defaultValue: Float
     ): Float = getValue(collection, keyName, key, value, defaultValue) as? Float ?: defaultValue
 
+    /**
+     * Gets a long value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param key the key for the value.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the long value.
+     */
     fun getLong(collection: String, key: Any, defaultValue: Long = 0): Long =
         getLong(collection, "key", key, "value", defaultValue)
 
+    /**
+     * Gets a long value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param key the key for the value.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the long value.
+     */
     fun getLong(collection: String, keyName: String, key: Any, defaultValue: Long): Long =
         getLong(collection, keyName, key, "value", defaultValue)
 
+    /**
+     * Gets a long value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param key the key for the value.
+     * @param value the value field.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the long value.
+     */
     fun getLong(
         collection: String,
         keyName: String,
@@ -183,12 +459,39 @@ open class Database {
         defaultValue: Long
     ): Long = getValue(collection, keyName, key, value, defaultValue) as? Long ?: defaultValue
 
+    /**
+     * Gets a boolean value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param key the key for the value.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the boolean value.
+     */
     fun getBoolean(collection: String, key: Any, defaultValue: Boolean = false): Boolean =
         getBoolean(collection, "key", key, "value", defaultValue)
 
+    /**
+     * Gets a boolean value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param key the key for the value.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the boolean value.
+     */
     fun getBoolean(collection: String, keyName: String, key: Any, defaultValue: Boolean): Boolean =
         getBoolean(collection, keyName, key, "value", defaultValue)
 
+    /**
+     * Gets a boolean value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param key the key for the value.
+     * @param value the value field.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the boolean value.
+     */
     fun getBoolean(
         collection: String,
         keyName: String = "key",
@@ -197,61 +500,100 @@ open class Database {
         defaultValue: Boolean
     ): Boolean = getValue(collection, keyName, key, value, defaultValue) as? Boolean ?: defaultValue
 
-    fun getValue(
-        collection: String,
-        keyName: String = "key",
-        key: Any,
-        value: String = "value",
-        defaultValue: Any?
-    ): Any? {
-        val document = getDocument(collection, keyName, key) ?: return defaultValue
-        return document[value]
+    /**
+     * Gets a value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param key the key for the value.
+     * @return the value.
+     */
+    fun getValue(collection: String, key: Any): Any? = getValue(collection, "key", key)
+
+    /**
+     * Gets a value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param key the key for the value.
+     * @return the value.
+     */
+    fun getValue(collection: String, keyName: String, key: Any): Any? = getValue(collection, keyName, key, "value")
+
+    /**
+     * Gets a value from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param key the key for the value.
+     * @param value the value field.
+     * @return the value.
+     */
+    fun getValue(collection: String, keyName: String, key: Any, value: String): Any? =
+        getValue(collection, keyName, key, value, null)
+
+    /**
+     * Gets a value from the specified collection with the provided key and default value.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param key the key for the value.
+     * @param value the value field.
+     * @param defaultValue the default value if the key does not exist.
+     * @return the value.
+     */
+    fun getValue(collection: String, keyName: String, key: Any, value: String, defaultValue: Any?): Any? {
+        val document = getDocument(collection, keyName, key)
+        return document?.get(value) ?: defaultValue
     }
 
-    fun <T> getObjects(collection: String, classOff: Class<T>, keyName: String, key: Any): List<T?> {
-        val objects = this.getDocumentsAsList(collection, keyName, key)
-        val objectsClass = mutableListOf<T?>()
-        for (document in objects) objectsClass.add(Gson().fromJson(document.toJson(), classOff))
-        return objectsClass
+    /**
+     * Gets a document from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param key the key for the document.
+     * @return the document.
+     */
+    fun getDocument(collection: String, key: Any): Document? = getDocument(collection, "key", key)
+
+    /**
+     * Gets a document from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param keyName the name of the key field.
+     * @param key the key for the document.
+     * @return the document.
+     */
+    fun getDocument(collection: String, keyName: String, key: Any): Document? {
+        val dbObject = BasicDBObject().append(keyName, if (key is CaseInsensitiveString) key.compile() else key)
+        val iterable = database!!.getCollection(collection).find(dbObject as Bson)
+        return iterable.first()
     }
 
-    fun <T> getObject(collection: String, key: Any, classOff: Class<T>): T =
-        this.getObject(collection, "key", key, classOff)
-
-    fun <T> getObject(collection: String, keyName: String, key: Any, classOff: Class<T>): T =
-        Gson().fromJson(this.getString(collection, keyName, key, ""), classOff)
-
-    fun getObjectJson(collection: String, key: Any): String? = getObjectJson(collection, "key", key)
-
-    fun getObjectJson(collection: String, keyName: String, key: Any): String? {
-        return getDocument(collection, keyName, key)?.toJson()
-    }
-
-    fun getDocument(collection: String, keyName: String, key: Any): Document? =
-        getDocuments(collection, keyName, key).first()
-
-    fun getDocuments(collection: String, keyName: String, key: Any): FindIterable<Document> {
-        val dbObject: DBObject =
-            BasicDBObject().append(keyName, if (key is CaseInsensitiveString) key.compile() else key)
+    /**
+     * Gets an iterable of documents from the specified collection with the provided key.
+     *
+     * @param collection the collection name.
+     * @param key the key for the documents.
+     * @return the iterable of documents.
+     */
+    fun getIterable(collection: String, key: Any): FindIterable<Document> {
+        val dbObject = BasicDBObject().append("key", if (key is CaseInsensitiveString) key.compile() else key)
         return database!!.getCollection(collection).find(dbObject as Bson)
     }
 
-    fun getDocumentsAsList(collection: String, keyName: String, key: Any): ArrayList<Document> {
-        val docs = ArrayList<Document>()
-        for (document in getDocuments(collection, keyName, key)) docs.add(document)
-        return docs
-    }
+    /**
+     * Converts a document to a JSON string.
+     *
+     * @param document the document to convert.
+     * @return the JSON string.
+     */
+    fun convertJson(document: Document): String = Gson().toJson(document)
 
-    fun <T> getList(collection: String, keyName: String, key: Any, classOff: Class<T>): List<T>? =
-        this.getList(collection, keyName, key, "value", classOff)
-
-    fun <T> getList(collection: String, key: Any, classOff: Class<T>): List<T>? =
-        this.getList(collection, "key", key, "value", classOff)
-
-    fun <T> getList(collection: String, keyName: String, key: Any, value: String, classOff: Class<T>): List<T>? {
-        if (this.exists(collection, keyName, key)) {
-            val doc = this.getDocument(collection, keyName, key)
-            return doc!!.getList(value, classOff)
-        } else return null
-    }
+    /**
+     * Converts a JSON string to a document.
+     *
+     * @param json the JSON string to convert.
+     * @return the document.
+     */
+    fun convertJson(json: String): Document = Document.parse(json)
 }

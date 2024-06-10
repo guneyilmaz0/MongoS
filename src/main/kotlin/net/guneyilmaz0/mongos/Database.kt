@@ -17,6 +17,12 @@ import org.bson.conversions.Bson
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 open class Database {
+
+    companion object {
+        const val KEY_FIELD = "key"
+        const val VALUE_FIELD = "value"
+    }
+
     var database: MongoDatabase? = null
 
     /**
@@ -47,11 +53,11 @@ open class Database {
      */
     fun set(collection: String, key: Any, value: Any, async: Boolean = false) {
         val keyDocument = Document().apply {
-            append("key", if (key is CaseInsensitiveString) key.compile() else key)
+            append(KEY_FIELD, if (key is CaseInsensitiveString) key.compile() else key)
         }
 
         val finalDocument = keyDocument.apply {
-            append("value", if (value is MongoSObject) value.toString() else value)
+            append(VALUE_FIELD, if (value is MongoSObject) value.toString() else value)
         }
 
         set(collection, key, finalDocument, async)
@@ -92,7 +98,7 @@ open class Database {
         if (async) runBlocking { setFinalSuspend(collection, key, document) }
         else {
             val removed = removeData(collection, key)
-            if (removed != null) document.replace("key", removed["key"])
+            if (removed != null) document.replace(KEY_FIELD, removed[KEY_FIELD])
             database!!.getCollection(collection).insertOne(document)
         }
     }
@@ -107,7 +113,7 @@ open class Database {
     suspend fun setFinalSuspend(collection: String, key: Any, document: Document) {
         coroutineScope {
             val removed = removeData(collection, key)
-            if (removed != null) document.replace("key", removed["key"])
+            if (removed != null) document.replace(KEY_FIELD, removed[KEY_FIELD])
             database!!.getCollection(collection).insertOne(document)
         }
     }
@@ -141,7 +147,7 @@ open class Database {
      * @param newKey the new key.
      */
     fun renameKey(collection: String, oldKey: Any, newKey: Any) {
-        return renameKey(collection, "key", oldKey, newKey)
+        return renameKey(collection, KEY_FIELD, oldKey, newKey)
     }
 
     /**
@@ -157,8 +163,8 @@ open class Database {
         if (document != null) {
             removeData(collection, oldKey)
             document = when (newKey) {
-                is CaseInsensitiveString -> document.append("key", newKey.compile())
-                else -> document.append("key", newKey)
+                is CaseInsensitiveString -> document.append(KEY_FIELD, newKey.compile())
+                else -> document.append(KEY_FIELD, newKey)
             }
             set(collection, newKey, document)
         }
@@ -172,8 +178,8 @@ open class Database {
      * @param newValue the new value to set.
      */
     fun update(collection: String, key: Any, newValue: Any) {
-        val filter = BasicDBObject().append("key", if (key is CaseInsensitiveString) key.compile() else key)
-        val update = BasicDBObject().append("\$set", BasicDBObject().append("value", newValue))
+        val filter = BasicDBObject().append(KEY_FIELD, if (key is CaseInsensitiveString) key.compile() else key)
+        val update = BasicDBObject().append("\$set", BasicDBObject().append(VALUE_FIELD, newValue))
         database!!.getCollection(collection).updateOne(filter as Bson, update as Bson)
     }
 
@@ -184,7 +190,7 @@ open class Database {
      * @param key the key for the document.
      * @return the removed document.
      */
-    fun removeData(collection: String, key: Any): Document? = removeData(collection, "key", key)
+    fun removeData(collection: String, key: Any): Document? = removeData(collection, KEY_FIELD, key)
 
     /**
      * Removes a document from the specified collection with the provided key.
@@ -206,7 +212,7 @@ open class Database {
      * @param key the key for the document.
      * @return true if the document exists, false otherwise.
      */
-    fun exists(collection: String, key: Any): Boolean = exists(collection, "key", key)
+    fun exists(collection: String, key: Any): Boolean = exists(collection, KEY_FIELD, key)
 
     /**
      * Checks if a document exists in the specified collection with the provided key.
@@ -236,7 +242,7 @@ open class Database {
      */
     fun getKeys(collection: String): List<String> {
         val keys = ArrayList<String>()
-        for (document in database!!.getCollection(collection).find()) keys.add(document["key"].toString())
+        for (document in database!!.getCollection(collection).find()) keys.add(document[KEY_FIELD].toString())
         return keys
     }
 
@@ -248,8 +254,8 @@ open class Database {
      */
     fun getAll(collection: String): Map<String, Any> {
         val map = HashMap<String, Any>()
-        for (document in database!!.getCollection(collection).find()) map[document["key"].toString()] =
-            document["value"]!!
+        for (document in database!!.getCollection(collection).find()) map[document[KEY_FIELD].toString()] =
+            document[VALUE_FIELD]!!
         return map
     }
 
@@ -262,7 +268,7 @@ open class Database {
      * @return the integer value.
      */
     fun getInt(collection: String, key: Any, defaultValue: Int = 0): Int =
-        getInt(collection, "key", key, "value", defaultValue)
+        getInt(collection, KEY_FIELD, key, VALUE_FIELD, defaultValue)
 
     /**
      * Gets an integer value from the specified collection with the provided key.
@@ -274,7 +280,7 @@ open class Database {
      * @return the integer value.
      */
     fun getInt(collection: String, keyName: String, key: Any, defaultValue: Int): Int =
-        getInt(collection, keyName, key, "value", defaultValue)
+        getInt(collection, keyName, key, VALUE_FIELD, defaultValue)
 
     /**
      * Gets an integer value from the specified collection with the provided key.
@@ -303,7 +309,7 @@ open class Database {
      * @return the string value.
      */
     fun getString(collection: String, key: Any, defaultValue: String = ""): String =
-        getString(collection, "key", key, "value", defaultValue)
+        getString(collection, KEY_FIELD, key, VALUE_FIELD, defaultValue)
 
     /**
      * Gets a string value from the specified collection with the provided key.
@@ -315,7 +321,7 @@ open class Database {
      * @return the string value.
      */
     fun getString(collection: String, keyName: String, key: Any, defaultValue: String): String =
-        getString(collection, keyName, key, "value", defaultValue)
+        getString(collection, keyName, key, VALUE_FIELD, defaultValue)
 
     /**
      * Gets a string value from the specified collection with the provided key.
@@ -329,9 +335,9 @@ open class Database {
      */
     fun getString(
         collection: String,
-        keyName: String = "key",
+        keyName: String = KEY_FIELD,
         key: Any,
-        value: String = "value",
+        value: String = VALUE_FIELD,
         defaultValue: String
     ): String = getValue(collection, keyName, key, value, defaultValue) as? String ?: defaultValue
 
@@ -344,7 +350,7 @@ open class Database {
      * @return the double value.
      */
     fun getDouble(collection: String, key: Any, defaultValue: Double = 0.0): Double =
-        getDouble(collection, "key", key, "value", defaultValue)
+        getDouble(collection, KEY_FIELD, key, VALUE_FIELD, defaultValue)
 
     /**
      * Gets a double value from the specified collection with the provided key.
@@ -356,7 +362,7 @@ open class Database {
      * @return the double value.
      */
     fun getDouble(collection: String, keyName: String, key: Any, defaultValue: Double): Double =
-        getDouble(collection, keyName, key, "value", defaultValue)
+        getDouble(collection, keyName, key, VALUE_FIELD, defaultValue)
 
     /**
      * Gets a double value from the specified collection with the provided key.
@@ -370,9 +376,9 @@ open class Database {
      */
     fun getDouble(
         collection: String,
-        keyName: String = "key",
+        keyName: String = KEY_FIELD,
         key: Any,
-        value: String = "value",
+        value: String = VALUE_FIELD,
         defaultValue: Double
     ): Double = getValue(collection, keyName, key, value, defaultValue) as? Double ?: defaultValue
 
@@ -385,7 +391,7 @@ open class Database {
      * @return the float value.
      */
     fun getFloat(collection: String, key: Any, defaultValue: Float = 0f): Float =
-        getFloat(collection, "key", key, "value", defaultValue)
+        getFloat(collection, KEY_FIELD, key, VALUE_FIELD, defaultValue)
 
     /**
      * Gets a float value from the specified collection with the provided key.
@@ -397,7 +403,7 @@ open class Database {
      * @return the float value.
      */
     fun getFloat(collection: String, keyName: String, key: Any, defaultValue: Float): Float =
-        getFloat(collection, keyName, key, "value", defaultValue)
+        getFloat(collection, keyName, key, VALUE_FIELD, defaultValue)
 
     /**
      * Gets a float value from the specified collection with the provided key.
@@ -411,9 +417,9 @@ open class Database {
      */
     fun getFloat(
         collection: String,
-        keyName: String = "key",
+        keyName: String = KEY_FIELD,
         key: Any,
-        value: String = "value",
+        value: String = VALUE_FIELD,
         defaultValue: Float
     ): Float = getValue(collection, keyName, key, value, defaultValue) as? Float ?: defaultValue
 
@@ -426,7 +432,7 @@ open class Database {
      * @return the long value.
      */
     fun getLong(collection: String, key: Any, defaultValue: Long = 0): Long =
-        getLong(collection, "key", key, "value", defaultValue)
+        getLong(collection, KEY_FIELD, key, VALUE_FIELD, defaultValue)
 
     /**
      * Gets a long value from the specified collection with the provided key.
@@ -438,7 +444,7 @@ open class Database {
      * @return the long value.
      */
     fun getLong(collection: String, keyName: String, key: Any, defaultValue: Long): Long =
-        getLong(collection, keyName, key, "value", defaultValue)
+        getLong(collection, keyName, key, VALUE_FIELD, defaultValue)
 
     /**
      * Gets a long value from the specified collection with the provided key.
@@ -467,7 +473,7 @@ open class Database {
      * @return the boolean value.
      */
     fun getBoolean(collection: String, key: Any, defaultValue: Boolean = false): Boolean =
-        getBoolean(collection, "key", key, "value", defaultValue)
+        getBoolean(collection, KEY_FIELD, key, VALUE_FIELD, defaultValue)
 
     /**
      * Gets a boolean value from the specified collection with the provided key.
@@ -479,7 +485,7 @@ open class Database {
      * @return the boolean value.
      */
     fun getBoolean(collection: String, keyName: String, key: Any, defaultValue: Boolean): Boolean =
-        getBoolean(collection, keyName, key, "value", defaultValue)
+        getBoolean(collection, keyName, key, VALUE_FIELD, defaultValue)
 
     /**
      * Gets a boolean value from the specified collection with the provided key.
@@ -493,9 +499,9 @@ open class Database {
      */
     fun getBoolean(
         collection: String,
-        keyName: String = "key",
+        keyName: String = KEY_FIELD,
         key: Any,
-        value: String = "value",
+        value: String = VALUE_FIELD,
         defaultValue: Boolean
     ): Boolean = getValue(collection, keyName, key, value, defaultValue) as? Boolean ?: defaultValue
 
@@ -506,7 +512,7 @@ open class Database {
      * @param key the key for the value.
      * @return the value.
      */
-    fun getValue(collection: String, key: Any): Any? = getValue(collection, "key", key)
+    fun getValue(collection: String, key: Any): Any? = getValue(collection, KEY_FIELD, key)
 
     /**
      * Gets a value from the specified collection with the provided key.
@@ -516,7 +522,7 @@ open class Database {
      * @param key the key for the value.
      * @return the value.
      */
-    fun getValue(collection: String, keyName: String, key: Any): Any? = getValue(collection, keyName, key, "value")
+    fun getValue(collection: String, keyName: String, key: Any): Any? = getValue(collection, keyName, key, VALUE_FIELD)
 
     /**
      * Gets a value from the specified collection with the provided key.
@@ -552,7 +558,7 @@ open class Database {
      * @param key the key for the document.
      * @return the document.
      */
-    fun getDocument(collection: String, key: Any): Document? = getDocument(collection, "key", key)
+    fun getDocument(collection: String, key: Any): Document? = getDocument(collection, KEY_FIELD, key)
 
     /**
      * Gets a document from the specified collection with the provided key.
@@ -576,7 +582,7 @@ open class Database {
      * @return the iterable of documents.
      */
     fun getIterable(collection: String, key: Any): FindIterable<Document> {
-        val dbObject = BasicDBObject().append("key", if (key is CaseInsensitiveString) key.compile() else key)
+        val dbObject = BasicDBObject().append(KEY_FIELD, if (key is CaseInsensitiveString) key.compile() else key)
         return database!!.getCollection(collection).find(dbObject as Bson)
     }
 

@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.0.0"
+    id("java")
 }
 
 group = "net.guneyilmaz0.mongos"
@@ -25,4 +26,17 @@ tasks.test {
 
 kotlin {
     jvmToolchain(21)
+}
+
+tasks.create("fat", Jar::class) {
+    group = "build"
+    description = "Creates a fat jar."
+    manifest.attributes["Main-Class"] = "net.guneyilmaz0.MongoS"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    val dependencies = configurations
+        .runtimeClasspath
+        .get()
+        .map(::zipTree)
+    from(dependencies)
+    with(tasks.jar.get())
 }

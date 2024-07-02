@@ -551,6 +551,32 @@ open class Database {
         return document?.get(value) ?: defaultValue
     }
 
+    fun <T> getObjects(collection: String, classOff: Class<T>, keyName: String, key: Any): List<T?> {
+        val objects = this.getDocumentsAsList(collection, keyName, key)
+        val objectsClass = mutableListOf<T?>()
+        for (document in objects) objectsClass.add(Gson().fromJson(document.toJson(), classOff))
+        return objectsClass
+    }
+
+    fun <T> getObject(collection: String, key: Any, classOff: Class<T>): T =
+        this.getObject(collection, "key", key, classOff)
+
+    fun <T> getObject(collection: String, keyName: String, key: Any, classOff: Class<T>): T =
+        Gson().fromJson(this.getString(collection, keyName, key, ""), classOff)
+
+    fun <T> getList(collection: String, keyName: String, key: Any, classOff: Class<T>): List<T>? =
+        this.getList(collection, keyName, key, "value", classOff)
+
+    fun <T> getList(collection: String, key: Any, classOff: Class<T>): List<T>? =
+        this.getList(collection, "key", key, "value", classOff)
+
+    fun <T> getList(collection: String, keyName: String, key: Any, value: String, classOff: Class<T>): List<T>? {
+        if (this.exists(collection, keyName, key)) {
+            val doc = this.getDocument(collection, keyName, key)
+            return doc!!.getList(value, classOff)
+        } else return null
+    }
+
     /**
      * Gets a document from the specified collection with the provided key.
      *
@@ -572,6 +598,18 @@ open class Database {
         val dbObject = BasicDBObject().append(keyName, if (key is CaseInsensitiveString) key.compile() else key)
         val iterable = database!!.getCollection(collection).find(dbObject as Bson)
         return iterable.first()
+    }
+
+    fun getDocuments(collection: String, keyName: String, key: Any): FindIterable<Document> {
+        val dbObject: DBObject =
+            BasicDBObject().append(keyName, if (key is CaseInsensitiveString) key.compile() else key)
+        return database!!.getCollection(collection).find(dbObject as Bson)
+    }
+
+    fun getDocumentsAsList(collection: String, keyName: String, key: Any): ArrayList<Document> {
+        val docs = ArrayList<Document>()
+        for (document in getDocuments(collection, keyName, key)) docs.add(document)
+        return docs
     }
 
     /**

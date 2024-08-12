@@ -4,9 +4,7 @@ import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoClients
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.ChangeStreamIterable
-import org.apache.logging.log4j.LogManager
 import org.bson.Document
-import org.apache.logging.log4j.Logger
 
 /**
  * This class represents a MongoDB client.
@@ -17,11 +15,6 @@ import org.apache.logging.log4j.Logger
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class MongoS : Database {
     private val mongo: MongoClient
-
-    companion object {
-        @JvmStatic
-        val logger: Logger = LogManager.getLogger("MongoS")
-    }
 
     /**
      * Initializes a new instance of the MongoS class with the specified host, port, and database name.

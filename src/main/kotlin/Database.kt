@@ -551,6 +551,16 @@ open class Database {
         return document?.get(value) ?: defaultValue
     }
 
+    /**
+     * Retrieves a list of objects from a collection that match a specified key.
+     *
+     * @param T The type of objects to retrieve.
+     * @param collection The name of the collection.
+     * @param classOff The class type of the objects to retrieve.
+     * @param keyName The name of the key to filter by.
+     * @param key The value of the key to filter by.
+     * @return A list of objects of the specified type, or an empty list if no objects match the criteria.
+     */
     fun <T> getObjects(collection: String, classOff: Class<T>, keyName: String, key: Any): List<T?> {
         val objects = this.getDocumentsAsList(collection, keyName, key)
         val objectsClass = mutableListOf<T?>()
@@ -558,18 +568,67 @@ open class Database {
         return objectsClass
     }
 
+    /**
+     * Retrieves a single object from a collection based on a key.
+     *
+     * @param T The type of the object to retrieve.
+     * @param collection The name of the collection.
+     * @param key The value of the key to filter by.
+     * @param classOff The class type of the object to retrieve.
+     * @return The object of the specified type that matches the criteria.
+     */
     fun <T> getObject(collection: String, key: Any, classOff: Class<T>): T =
         this.getObject(collection, "key", key, classOff)
 
+    /**
+     * Retrieves a single object from a collection based on a specified key and key name.
+     *
+     * @param T The type of the object to retrieve.
+     * @param collection The name of the collection.
+     * @param keyName The name of the key to filter by.
+     * @param key The value of the key to filter by.
+     * @param classOff The class type of the object to retrieve.
+     * @return The object of the specified type that matches the criteria.
+     */
     fun <T> getObject(collection: String, keyName: String, key: Any, classOff: Class<T>): T =
         Gson().fromJson(this.getString(collection, keyName, key, ""), classOff)
 
+    /**
+     * Retrieves a list of objects from a collection based on a key.
+     *
+     * @param T The type of objects to retrieve.
+     * @param collection The name of the collection.
+     * @param keyName The name of the key to filter by.
+     * @param key The value of the key to filter by.
+     * @param classOff The class type of the objects to retrieve.
+     * @return A list of objects of the specified type, or null if no objects match the criteria.
+     */
     fun <T> getList(collection: String, keyName: String, key: Any, classOff: Class<T>): List<T>? =
         this.getList(collection, keyName, key, "value", classOff)
 
+    /**
+     * Retrieves a list of objects from a collection based on a key.
+     *
+     * @param T The type of objects to retrieve.
+     * @param collection The name of the collection.
+     * @param key The value of the key to filter by.
+     * @param classOff The class type of the objects to retrieve.
+     * @return A list of objects of the specified type, or null if no objects match the criteria.
+     */
     fun <T> getList(collection: String, key: Any, classOff: Class<T>): List<T>? =
         this.getList(collection, "key", key, "value", classOff)
 
+    /**
+     * Retrieves a list of objects from a collection based on a specified key, key name, and value.
+     *
+     * @param T The type of objects to retrieve.
+     * @param collection The name of the collection.
+     * @param keyName The name of the key to filter by.
+     * @param key The value of the key to filter by.
+     * @param value The name of the value to retrieve the list from.
+     * @param classOff The class type of the objects to retrieve.
+     * @return A list of objects of the specified type, or null if the key does not exist in the collection.
+     */
     fun <T> getList(collection: String, keyName: String, key: Any, value: String, classOff: Class<T>): List<T>? {
         if (this.exists(collection, keyName, key)) {
             val doc = this.getDocument(collection, keyName, key)
@@ -600,12 +659,28 @@ open class Database {
         return iterable.first()
     }
 
+    /**
+     * Retrieves documents from a collection that match the specified key.
+     *
+     * @param collection The name of the collection.
+     * @param keyName The name of the key to filter by.
+     * @param key The value of the key to filter by. If the key is a `CaseInsensitiveString`, it will be compiled before querying.
+     * @return A `FindIterable<Document>` containing the documents that match the criteria.
+     */
     fun getDocuments(collection: String, keyName: String, key: Any): FindIterable<Document> {
         val dbObject: DBObject =
             BasicDBObject().append(keyName, if (key is CaseInsensitiveString) key.compile() else key)
         return database!!.getCollection(collection).find(dbObject as Bson)
     }
 
+    /**
+     * Retrieves documents from a collection as a list that match the specified key.
+     *
+     * @param collection The name of the collection.
+     * @param keyName The name of the key to filter by.
+     * @param key The value of the key to filter by.
+     * @return An `ArrayList<Document>` containing the documents that match the criteria.
+     */
     fun getDocumentsAsList(collection: String, keyName: String, key: Any): ArrayList<Document> {
         val docs = ArrayList<Document>()
         for (document in getDocuments(collection, keyName, key)) docs.add(document)

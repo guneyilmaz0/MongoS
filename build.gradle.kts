@@ -14,7 +14,7 @@ dependencies {
     implementation("org.mongodb:mongodb-driver-sync:5.3.1")
     implementation("org.mongodb:bson:5.3.1")
     implementation("com.google.code.gson:gson:2.12.1")
-    implementation("ch.qos.logback:logback-classic:1.2.11")
+    implementation("ch.qos.logback:logback-classic:1.5.16")
 }
 
 kotlin {

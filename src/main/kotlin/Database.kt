@@ -5,6 +5,7 @@ import com.mongodb.BasicDBObject
 import com.mongodb.DBObject
 import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoDatabase
+import com.mongodb.client.model.Filters
 import kotlinx.coroutines.*
 import org.bson.Document
 import org.bson.conversions.Bson
@@ -256,6 +257,21 @@ open class Database {
         val map = HashMap<String, Any>()
         for (document in database!!.getCollection(collection).find()) map[document[KEY_FIELD].toString()] =
             document[VALUE_FIELD]!!
+        return map
+    }
+
+    /**
+     * Gets filtered documents in the specified collection as a map.
+     *
+     * @param collection the collection name.
+     * @param filters a map where each entry represents key1 -> key2 pairs to filter.
+     * @return a map of keys and values matching the filters.
+     */
+    fun getAll(collection: String, filters: Map<String, String>): Map<String, Any> {
+        val map = HashMap<String, Any>()
+        val coll = database!!.getCollection(collection)
+        val query = Filters.and(filters.map { Filters.eq(it.key, it.value) })
+        for (document in coll.find(query)) map[document[KEY_FIELD].toString()] = document[VALUE_FIELD]!!
         return map
     }
 

@@ -1,43 +1,34 @@
 plugins {
-    kotlin("jvm") version "2.0.20"
-    application
-    `maven-publish`
+    kotlin("jvm") version "2.1.10"
 }
 
 group = "net.guneyilmaz0.mongos"
-version = "5.0.0-beta.4"
+version = "5.0.1"
 
 repositories {
     mavenCentral()
-    mavenLocal()
 }
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
-    implementation("org.mongodb:mongodb-driver-sync:5.2.0")
-    implementation("org.mongodb:bson:5.2.0")
-    implementation("com.google.code.gson:gson:2.10.1")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.0.0")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.0")
-    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.20.0")
+    implementation("org.mongodb:mongodb-driver-sync:5.3.1")
+    implementation("org.mongodb:bson:5.3.1")
+    implementation("com.google.code.gson:gson:2.12.1")
+    implementation("ch.qos.logback:logback-classic:1.2.11")
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            groupId = group.toString()
-            artifactId = "MongoS"
-            version = this.version
+kotlin {
+    jvmToolchain(21)
+}
 
-            from(components["java"])
-        }
+tasks.withType<Jar> {
+    manifest {
+        attributes["Main-Class"] = "net.guneyilmaz0.MongoS"
     }
-}
-
-tasks.test {
-    useJUnitPlatform()
-}
-
-application {
-    mainClass.set("MongoSKt")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(sourceSets.main.get().output)
+    dependsOn(configurations.runtimeClasspath)
+    from({
+        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
+    })
 }

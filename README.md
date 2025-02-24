@@ -36,7 +36,7 @@ add the following dependencies to your file:
 
 - Gradle
 
-```
+```gradle
 repositories {
     mavenCentral()
     maven("https://jitpack.io")

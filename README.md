@@ -43,7 +43,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.guneyilmaz0:MongoS:1.0.1")
+    implementation("com.github.guneyilmaz0:MongoS:version")
 }
 ```
 
@@ -59,7 +59,7 @@ dependencies {
 <dependency>
     <groupId>com.github.guneyilmaz0</groupId>
     <artifactId>MongoS</artifactId>
-    <version>1.0.1</version>
+    <version>version</version>
 </dependency>
 ```
 

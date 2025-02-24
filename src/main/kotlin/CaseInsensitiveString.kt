@@ -16,4 +16,11 @@ class CaseInsensitiveString(private val string: String) {
      * @return a Pattern object.
      */
     fun compile(): Pattern = Pattern.compile(string, Pattern.CASE_INSENSITIVE)
+
+    override fun toString(): String = string
+
+    override fun equals(other: Any?): Boolean =
+        other is CaseInsensitiveString && string.equals(other.string, ignoreCase = true)
+
+    override fun hashCode(): Int = string.lowercase().hashCode()
 }

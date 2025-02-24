@@ -14,7 +14,7 @@ import org.bson.Document
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class MongoS : Database {
-    private val mongo: MongoClient
+    private var mongo: MongoClient
 
     /**
      * Initializes a new instance of the MongoS class with the specified host, port, and database name.
@@ -26,6 +26,7 @@ class MongoS : Database {
     constructor(host: String, port: Int, dbName: String) {
         mongo = MongoClients.create("mongodb://$host:$port")
         init(mongo.getDatabase(dbName))
+        isConnected()
     }
 
     /**
@@ -37,6 +38,7 @@ class MongoS : Database {
     constructor(uri: String, dbName: String) {
         mongo = MongoClients.create(uri)
         init(mongo.getDatabase(dbName))
+        isConnected()
     }
 
     /**
@@ -47,6 +49,7 @@ class MongoS : Database {
     constructor(dbName: String) {
         mongo = MongoClients.create()
         init(mongo.getDatabase(dbName))
+        isConnected()
     }
 
     /**
@@ -55,7 +58,8 @@ class MongoS : Database {
      * @param collection the name of the collection.
      * @return a MongoCollection object.
      */
-    fun getCollection(collection: String): MongoCollection<Document> = database!!.getCollection(collection)
+    fun getCollection(collection: String): MongoCollection<Document> =
+        database.getCollection(collection)
 
     /**
      * Gets another database.
@@ -63,10 +67,8 @@ class MongoS : Database {
      * @param dataBase the name of the database.
      * @return a Database object.
      */
-    fun getAnotherDatabase(dataBase: String): Database {
-        val db = Database()
-        db.init(mongo.getDatabase(dataBase))
-        return db
+    fun getAnotherDatabase(dataBase: String): Database = Database().apply {
+        init(mongo.getDatabase(dataBase))
     }
 
     /**

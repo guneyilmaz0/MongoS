@@ -6,7 +6,10 @@ import com.mongodb.DBObject
 import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.Filters
+import com.mongodb.client.result.InsertManyResult
 import kotlinx.coroutines.*
+import org.bson.BsonDocument
+import org.bson.BsonInt64
 import org.bson.Document
 import org.bson.conversions.Bson
 
@@ -22,18 +25,26 @@ open class Database {
     companion object {
         const val KEY_FIELD = "key"
         const val VALUE_FIELD = "value"
+        val gson: Gson = Gson()
     }
 
-    var database: MongoDatabase? = null
+    lateinit var database: MongoDatabase
 
     /**
      * Initializes the database with the specified MongoDB database instance.
      *
      * @param database the MongoDB database instance.
      */
-    open fun init(database: MongoDatabase?) {
-        this.database = database
+    open fun init(database: MongoDatabase) {
+        try {
+            this.database = database
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
+
+    private fun createDBObject(keyName: String, key: Any): DBObject =
+        BasicDBObject().append(keyName, if (key is CaseInsensitiveString) key.compile() else key)
 
     /**
      * Sets a value in the specified collection with the provided key and value.
@@ -53,39 +64,10 @@ open class Database {
      * @param async whether the operation should be asynchronous.
      */
     fun set(collection: String, key: Any, value: Any, async: Boolean = false) {
-        val keyDocument = Document().apply {
-            append(KEY_FIELD, if (key is CaseInsensitiveString) key.compile() else key)
-        }
-
-        val finalDocument = keyDocument.apply {
-            append(VALUE_FIELD, if (value is MongoSObject) value.toString() else value)
-        }
-
-        set(collection, key, finalDocument, async)
+        val keyDocument = Document(KEY_FIELD, if (key is CaseInsensitiveString) key.compile() else key)
+        val finalDocument = keyDocument.append(VALUE_FIELD, if (value is MongoSObject) value.toString() else value)
+        setFinal(collection, key, finalDocument, async)
     }
-
-
-    /**
-     * Sets a document in the specified collection with the provided key and document.
-     *
-     * @param collection the collection name.
-     * @param key the key for the document.
-     * @param document the document to set.
-     * @param async whether the operation should be asynchronous.
-     */
-    fun set(collection: String, key: Any, document: Document, async: Boolean = false) =
-        setFinal(collection, key, document, async)
-
-    /**
-     * Sets a document in the specified collection with the provided key and document.
-     *
-     * @param collection the collection name.
-     * @param key the key for the document.
-     * @param document the document to set.
-     * @param async whether the operation should be asynchronous.
-     */
-    fun set(collection: String, key: CaseInsensitiveString, document: Document, async: Boolean = false) =
-        setFinal(collection, key.compile(), document, async)
 
     /**
      * Final method to set a document in the specified collection with the provided key and document.
@@ -96,12 +78,8 @@ open class Database {
      * @param async whether the operation should be asynchronous.
      */
     fun setFinal(collection: String, key: Any, document: Document, async: Boolean = false) {
-        if (async) runBlocking { setFinalSuspend(collection, key, document) }
-        else {
-            val removed = removeData(collection, key)
-            if (removed != null) document.replace(KEY_FIELD, removed[KEY_FIELD])
-            database!!.getCollection(collection).insertOne(document)
-        }
+        if (async) CoroutineScope(Dispatchers.IO).launch { setFinalSuspend(collection, key, document) }
+        else runBlocking(Dispatchers.IO) { setFinalSuspend(collection, key, document) }
     }
 
     /**
@@ -111,12 +89,10 @@ open class Database {
      * @param key the key for the document.
      * @param document the document to set.
      */
-    suspend fun setFinalSuspend(collection: String, key: Any, document: Document) {
-        coroutineScope {
-            val removed = removeData(collection, key)
-            if (removed != null) document.replace(KEY_FIELD, removed[KEY_FIELD])
-            database!!.getCollection(collection).insertOne(document)
-        }
+    private suspend fun setFinalSuspend(collection: String, key: Any, document: Document) = coroutineScope {
+        val removed = removeData(collection, key)
+        removed?.let { document[KEY_FIELD] = it[KEY_FIELD] }
+        database.getCollection(collection).insertOne(document)
     }
 
     /**
@@ -124,9 +100,10 @@ open class Database {
      *
      * @param collection the collection name.
      * @param documents the list of documents to set.
+     * @return the result of the operation.
      */
-    fun setMany(collection: String, documents: List<Document>) {
-        database!!.getCollection(collection).insertMany(documents)
+    suspend fun setMany(collection: String, documents: List<Document>): InsertManyResult = coroutineScope {
+        database.getCollection(collection).insertMany(documents)
     }
 
     /**
@@ -172,26 +149,14 @@ open class Database {
     }
 
     /**
-     * Updates a value in the specified collection with the provided key and new value.
-     *
-     * @param collection the collection name.
-     * @param key the key for the value.
-     * @param newValue the new value to set.
-     */
-    fun update(collection: String, key: Any, newValue: Any) {
-        val filter = BasicDBObject().append(KEY_FIELD, if (key is CaseInsensitiveString) key.compile() else key)
-        val update = BasicDBObject().append("\$set", BasicDBObject().append(VALUE_FIELD, newValue))
-        database!!.getCollection(collection).updateOne(filter as Bson, update as Bson)
-    }
-
-    /**
      * Removes a document from the specified collection with the provided key.
      *
      * @param collection the collection name.
      * @param key the key for the document.
      * @return the removed document.
      */
-    fun removeData(collection: String, key: Any): Document? = removeData(collection, KEY_FIELD, key)
+    fun removeData(collection: String, key: Any): Document? =
+        database.getCollection(collection).findOneAndDelete(createDBObject(KEY_FIELD, key) as Bson)
 
     /**
      * Removes a document from the specified collection with the provided key.
@@ -201,39 +166,31 @@ open class Database {
      * @param key the key for the document.
      * @return the removed document.
      */
-    fun removeData(collection: String, keyName: String, key: Any): Document? {
-        val dbObject = BasicDBObject().append(keyName, if (key is CaseInsensitiveString) key.compile() else key)
-        return database!!.getCollection(collection).findOneAndDelete(dbObject as Bson)
-    }
+    fun removeData(collection: String, keyName: String, key: Any): Document? =
+        database.getCollection(collection).findOneAndDelete(createDBObject(keyName, key) as Bson)
 
     /**
      * Checks if a document exists in the specified collection with the provided key.
+     * Supports CaseInsensitiveString for key matching.
      *
      * @param collection the collection name.
      * @param key the key for the document.
      * @return true if the document exists, false otherwise.
      */
-    fun exists(collection: String, key: Any): Boolean = exists(collection, KEY_FIELD, key)
+    fun exists(collection: String, key: Any): Boolean =
+        exists(collection, KEY_FIELD, key)
 
     /**
      * Checks if a document exists in the specified collection with the provided key.
+     * Supports CaseInsensitiveString for key matching.
      *
      * @param collection the collection name.
      * @param keyName the name of the key field.
      * @param key the key for the document.
      * @return true if the document exists, false otherwise.
      */
-    fun exists(collection: String, keyName: String, key: Any): Boolean = getDocument(collection, keyName, key) != null
-
-    /**
-     * Checks if a document exists in the specified collection with the provided DBObject.
-     *
-     * @param collection the collection name.
-     * @param dbObject the DBObject to check.
-     * @return true if the document exists, false otherwise.
-     */
-    fun exists(collection: String, dbObject: DBObject): Boolean =
-        database!!.getCollection(collection).find(dbObject as Bson).first() != null
+    fun exists(collection: String, keyName: String, key: Any): Boolean =
+        database.getCollection(collection).find(createDBObject(keyName, key) as Bson).first() != null
 
     /**
      * Gets all keys in the specified collection.
@@ -241,11 +198,8 @@ open class Database {
      * @param collection the collection name.
      * @return a list of keys.
      */
-    fun getKeys(collection: String): List<String> {
-        val keys = ArrayList<String>()
-        for (document in database!!.getCollection(collection).find()) keys.add(document[KEY_FIELD].toString())
-        return keys
-    }
+    fun getKeys(collection: String): List<String> =
+        database.getCollection(collection).find().map { it[KEY_FIELD].toString() }.toList()
 
     /**
      * Gets all documents in the specified collection as a map.
@@ -253,12 +207,8 @@ open class Database {
      * @param collection the collection name.
      * @return a map of keys and values.
      */
-    fun getAll(collection: String): Map<String, Any> {
-        val map = HashMap<String, Any>()
-        for (document in database!!.getCollection(collection).find()) map[document[KEY_FIELD].toString()] =
-            document[VALUE_FIELD]!!
-        return map
-    }
+    fun getAll(collection: String): Map<String, Any> =
+        database.getCollection(collection).find().associate { it[KEY_FIELD].toString() to it[VALUE_FIELD]!! }
 
     /**
      * Gets filtered documents in the specified collection as a map.
@@ -267,13 +217,10 @@ open class Database {
      * @param filters a map where each entry represents key1 -> key2 pairs to filter.
      * @return a map of keys and values matching the filters.
      */
-    fun getAll(collection: String, filters: Map<String, String>): Map<String, Any> {
-        val map = HashMap<String, Any>()
-        val coll = database!!.getCollection(collection)
-        val query = Filters.and(filters.map { Filters.eq(it.key, it.value) })
-        for (document in coll.find(query)) map[document[KEY_FIELD].toString()] = document[VALUE_FIELD]!!
-        return map
-    }
+    fun getAll(collection: String, filters: Map<String, String>): Map<String, Any> =
+        database.getCollection(collection)
+            .find(Filters.and(filters.map { Filters.eq(it.key, it.value) }))
+            .associate { it[KEY_FIELD].toString() to it[VALUE_FIELD]!! }
 
     /**
      * Gets an integer value from the specified collection with the provided key.
@@ -580,7 +527,7 @@ open class Database {
     fun <T> getObjects(collection: String, classOff: Class<T>, keyName: String, key: Any): List<T?> {
         val objects = this.getDocumentsAsList(collection, keyName, key)
         val objectsClass = mutableListOf<T?>()
-        for (document in objects) objectsClass.add(Gson().fromJson(document.toJson(), classOff))
+        for (document in objects) objectsClass.add(gson.fromJson(document.toJson(), classOff))
         return objectsClass
     }
 
@@ -594,7 +541,7 @@ open class Database {
      * @return The object of the specified type that matches the criteria.
      */
     fun <T> getObject(collection: String, key: Any, classOff: Class<T>): T =
-        this.getObject(collection, "key", key, classOff)
+        this.getObject(collection, KEY_FIELD, key, classOff)
 
     /**
      * Retrieves a single object from a collection based on a specified key and key name.
@@ -607,7 +554,7 @@ open class Database {
      * @return The object of the specified type that matches the criteria.
      */
     fun <T> getObject(collection: String, keyName: String, key: Any, classOff: Class<T>): T =
-        Gson().fromJson(this.getString(collection, keyName, key, ""), classOff)
+        gson.fromJson(this.getString(collection, keyName, key, ""), classOff)
 
     /**
      * Retrieves a list of objects from a collection based on a key.
@@ -620,7 +567,7 @@ open class Database {
      * @return A list of objects of the specified type, or null if no objects match the criteria.
      */
     fun <T> getList(collection: String, keyName: String, key: Any, classOff: Class<T>): List<T>? =
-        this.getList(collection, keyName, key, "value", classOff)
+        this.getList(collection, keyName, key, VALUE_FIELD, classOff)
 
     /**
      * Retrieves a list of objects from a collection based on a key.
@@ -632,7 +579,7 @@ open class Database {
      * @return A list of objects of the specified type, or null if no objects match the criteria.
      */
     fun <T> getList(collection: String, key: Any, classOff: Class<T>): List<T>? =
-        this.getList(collection, "key", key, "value", classOff)
+        this.getList(collection, KEY_FIELD, key, VALUE_FIELD, classOff)
 
     /**
      * Retrieves a list of objects from a collection based on a specified key, key name, and value.
@@ -669,11 +616,8 @@ open class Database {
      * @param key the key for the document.
      * @return the document.
      */
-    fun getDocument(collection: String, keyName: String, key: Any): Document? {
-        val dbObject = BasicDBObject().append(keyName, if (key is CaseInsensitiveString) key.compile() else key)
-        val iterable = database!!.getCollection(collection).find(dbObject as Bson)
-        return iterable.first()
-    }
+    fun getDocument(collection: String, keyName: String, key: Any): Document? =
+        database.getCollection(collection).find(createDBObject(keyName, key) as Bson).first()
 
     /**
      * Retrieves documents from a collection that match the specified key.
@@ -683,11 +627,8 @@ open class Database {
      * @param key The value of the key to filter by. If the key is a `CaseInsensitiveString`, it will be compiled before querying.
      * @return A `FindIterable<Document>` containing the documents that match the criteria.
      */
-    fun getDocuments(collection: String, keyName: String, key: Any): FindIterable<Document> {
-        val dbObject: DBObject =
-            BasicDBObject().append(keyName, if (key is CaseInsensitiveString) key.compile() else key)
-        return database!!.getCollection(collection).find(dbObject as Bson)
-    }
+    fun getDocuments(collection: String, keyName: String, key: Any): FindIterable<Document> =
+        database.getCollection(collection).find(createDBObject(keyName, key) as Bson)
 
     /**
      * Retrieves documents from a collection as a list that match the specified key.
@@ -695,13 +636,10 @@ open class Database {
      * @param collection The name of the collection.
      * @param keyName The name of the key to filter by.
      * @param key The value of the key to filter by.
-     * @return An `ArrayList<Document>` containing the documents that match the criteria.
+     * @return An `List<Document>` containing the documents that match the criteria.
      */
-    fun getDocumentsAsList(collection: String, keyName: String, key: Any): ArrayList<Document> {
-        val docs = ArrayList<Document>()
-        for (document in getDocuments(collection, keyName, key)) docs.add(document)
-        return docs
-    }
+    fun getDocumentsAsList(collection: String, keyName: String, key: Any): List<Document> =
+        database.getCollection(collection).find(createDBObject(keyName, key) as Bson).toList()
 
     /**
      * Gets an iterable of documents from the specified collection with the provided key.
@@ -710,10 +648,8 @@ open class Database {
      * @param key the key for the documents.
      * @return the iterable of documents.
      */
-    fun getIterable(collection: String, key: Any): FindIterable<Document> {
-        val dbObject = BasicDBObject().append(KEY_FIELD, if (key is CaseInsensitiveString) key.compile() else key)
-        return database!!.getCollection(collection).find(dbObject as Bson)
-    }
+    fun getIterable(collection: String, key: Any): FindIterable<Document> =
+        database.getCollection(collection).find(createDBObject(KEY_FIELD, key) as Bson)
 
     /**
      * Converts a document to a JSON string.
@@ -721,7 +657,7 @@ open class Database {
      * @param document the document to convert.
      * @return the JSON string.
      */
-    fun convertJson(document: Document): String = Gson().toJson(document)
+    fun convertJson(document: Document): String = gson.toJson(document)
 
     /**
      * Converts a JSON string to a document.
@@ -730,4 +666,13 @@ open class Database {
      * @return the document.
      */
     fun convertJson(json: String): Document = Document.parse(json)
+
+    fun isConnected(): Boolean =
+        try {
+            database.runCommand(BsonDocument("ping", BsonInt64(1)))
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
 }

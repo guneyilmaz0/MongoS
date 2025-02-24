@@ -27,8 +27,41 @@ MongoS is a **Kotlin** project that provides a seamless interaction with **Mongo
    ```bash
    ./gradlew build
    ```
-   
+
 ---
+
+## 📦 Adding to Your Project
+To include `MongoS` in your existing Kotlin project,
+add the following dependencies to your file:
+
+- Gradle
+
+```
+repositories {
+    mavenCentral()
+    maven("https://jitpack.io")
+}
+
+dependencies {
+    implementation("com.github.guneyilmaz0:MongoS:1.0.1")
+}
+```
+
+- Maven
+
+```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+   
+<dependency>
+    <groupId>com.github.guneyilmaz0</groupId>
+    <artifactId>MongoS</artifactId>
+    <version>1.0.1</version>
+</dependency>
+```
 
 ## 🔍 Usage Example
 

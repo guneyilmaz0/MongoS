@@ -78,6 +78,6 @@ This project was developed by [**Güney Yılmaz**](https://github.com/guneyilmaz
 Feel free to reach out for any questions:
 
 - **GitHub:** [guneyilmaz0](https://github.com/guneyilmaz0)
-- **Email:** `guneyyilmaz2707@gmail.com.com`
+- **Email:** `guneyyilmaz2707@gmail.com`
 
 ---

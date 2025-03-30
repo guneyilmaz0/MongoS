@@ -8,7 +8,9 @@ import org.bson.conversions.Bson
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.*
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
+import org.mockito.kotlin.any
 
 class DatabaseTest {
 
@@ -18,16 +20,15 @@ class DatabaseTest {
     private lateinit var databaseInstance: Database
 
     @BeforeEach
-    @Suppress("UNCHECKED_CAST")
     fun setup() {
-        mockDatabase = mock(MongoDatabase::class.java)
-        mockCollection = mock(MongoCollection::class.java) as MongoCollection<Document>
-        mockFindIterable = mock(FindIterable::class.java) as FindIterable<Document>
+        mockDatabase = mock<MongoDatabase>()
+        mockCollection = mock<MongoCollection<Document>>()
+        mockFindIterable = mock<FindIterable<Document>>()
         databaseInstance = Database()
         databaseInstance.init(mockDatabase)
 
-        `when`(mockDatabase.getCollection("testCollection")).thenReturn(mockCollection)
-        `when`(mockCollection.find(any(Bson::class.java))).thenReturn(mockFindIterable)
+        whenever(mockDatabase.getCollection("testCollection")).thenReturn(mockCollection)
+        whenever(mockCollection.find(any<Bson>())).thenReturn(mockFindIterable)
     }
 
     @Test
@@ -45,7 +46,7 @@ class DatabaseTest {
     @Test
     fun `test getValue returns correct value when document exists`() {
         val document = Document("key", "testKey").append("value", "testValue")
-        `when`(mockFindIterable.first()).thenReturn(document)
+        whenever(mockFindIterable.first()).thenReturn(document)
 
         val result = databaseInstance.getValue("testCollection", "key", "testKey", "value", "default")
         assertEquals("testValue", result)
@@ -53,7 +54,7 @@ class DatabaseTest {
 
     @Test
     fun `test getValue returns default value when document does not exist`() {
-        `when`(mockFindIterable.first()).thenReturn(null)
+        whenever(mockFindIterable.first()).thenReturn(null)
 
         val result = databaseInstance.getValue("testCollection", "key", "testKey", "value", "default")
         assertEquals("default", result)
@@ -62,7 +63,7 @@ class DatabaseTest {
     @Test
     fun `test getList returns correct value`() {
         val document = Document("key", "testKey").append("value", listOf("testValue1", "testValue2"))
-        `when`(mockFindIterable.first()).thenReturn(document)
+        whenever(mockFindIterable.first()).thenReturn(document)
 
         val result = databaseInstance.getList("testCollection", "key", "testKey", String::class.java)
         assertEquals(listOf("testValue1", "testValue2"), result)
@@ -78,7 +79,7 @@ class DatabaseTest {
     @Test
     fun `test getObject returns correct value`() {
         val document = Document("key", "testKey").append("value", TestObject("testValue").toString())
-        `when`(mockFindIterable.first()).thenReturn(document)
+        whenever(mockFindIterable.first()).thenReturn(document)
 
         val result = databaseInstance.getObject("testCollection", "key", "testKey", TestObject::class.java)
         assertEquals("testValue", result.value)

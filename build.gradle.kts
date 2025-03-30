@@ -10,6 +10,8 @@ repositories {
 }
 
 dependencies {
+    testImplementation(kotlin("test"))
+    testImplementation("org.mockito:mockito-core:4.0.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     implementation("org.mongodb:mongodb-driver-sync:5.3.1")
     implementation("org.mongodb:bson:5.3.1")
@@ -31,4 +33,8 @@ tasks.withType<Jar> {
     from({
         configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
     })
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

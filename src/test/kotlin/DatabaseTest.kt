@@ -69,16 +69,11 @@ class DatabaseTest {
         assertEquals(listOf("testValue1", "testValue2"), result)
     }
 
-    class TestObject(val value: String) : MongoSObject()
-
-// For data class, toString() method is already implemented. So we need to override it.
-//    data class TestObject(val value: String) : MongoSObject() {
-//        override fun toString(): String = super.toString()
-//    }
+    data class TestObject(val value: String) : MongoSObject()
 
     @Test
     fun `test getObject returns correct value`() {
-        val document = Document("key", "testKey").append("value", TestObject("testValue").toString())
+        val document = Document("key", "testKey").append("value", TestObject("testValue").toDocument())
         whenever(mockFindIterable.first()).thenReturn(document)
 
         val result = databaseInstance.getObject("testCollection", "key", "testKey", TestObject::class.java)

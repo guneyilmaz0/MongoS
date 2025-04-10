@@ -1,20 +1,21 @@
 package net.guneyilmaz0.mongos
 
 import com.google.gson.Gson
+import org.bson.Document
 
 /**
  * This abstract class represents a MongoDB object.
- * It provides a method to convert the object into a JSON string.
+ * It provides a method to convert the object into a Document.
  */
 abstract class MongoSObject {
     companion object {
-        val gson: Gson = Gson()
+        private val gson: Gson = Gson()
     }
 
     /**
-     * Converts the MongoDB object into a JSON string.
+     * Converts the object into a Document.
      *
-     * @return a JSON string representation of the MongoDB object.
+     * @return a Document representation of the object.
      */
-    override fun toString(): String = gson.toJson(this)
+    fun toDocument(): Document = Document.parse(gson.toJson(this))
 }

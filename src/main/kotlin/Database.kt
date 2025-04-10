@@ -65,7 +65,7 @@ open class Database {
      */
     fun set(collection: String, key: Any, value: Any, async: Boolean = false) {
         val keyDocument = Document(KEY_FIELD, if (key is CaseInsensitiveString) key.compile() else key)
-        val finalDocument = keyDocument.append(VALUE_FIELD, if (value is MongoSObject) value.toString() else value)
+        val finalDocument = keyDocument.append(VALUE_FIELD, if (value is MongoSObject) value.toDocument() else value)
         setFinal(collection, key, finalDocument, async)
     }
 
@@ -515,23 +515,6 @@ open class Database {
     }
 
     /**
-     * Retrieves a list of objects from a collection that match a specified key.
-     *
-     * @param T The type of objects to retrieve.
-     * @param collection The name of the collection.
-     * @param classOff The class type of the objects to retrieve.
-     * @param keyName The name of the key to filter by.
-     * @param key The value of the key to filter by.
-     * @return A list of objects of the specified type, or an empty list if no objects match the criteria.
-     */
-    fun <T> getObjects(collection: String, classOff: Class<T>, keyName: String, key: Any): List<T?> {
-        val objects = this.getDocumentsAsList(collection, keyName, key)
-        val objectsClass = mutableListOf<T?>()
-        for (document in objects) objectsClass.add(gson.fromJson(document.toJson(), classOff))
-        return objectsClass
-    }
-
-    /**
      * Retrieves a single object from a collection based on a key.
      *
      * @param T The type of the object to retrieve.
@@ -552,9 +535,27 @@ open class Database {
      * @param key The value of the key to filter by.
      * @param classOff The class type of the object to retrieve.
      * @return The object of the specified type that matches the criteria.
+     * @throws NoSuchElementException if no document is found for the given criteria.
      */
-    fun <T> getObject(collection: String, keyName: String, key: Any, classOff: Class<T>): T =
-        gson.fromJson(this.getString(collection, keyName, key, ""), classOff)
+    fun <T> getObject(collection: String, keyName: String, key: Any, classOff: Class<T>): T {
+        val document = this.getDocument(collection, keyName, key)
+            ?: throw NoSuchElementException("No document found in collection '$collection' for key '$keyName' with value '$key'.")
+        return documentToObject(document, classOff)
+    }
+
+    /**
+     * Converts a Document to an object of the specified type.
+     *
+     * @param T The type of the object to convert to.
+     * @param document The Document to convert.
+     * @param classOff The class type of the object.
+     * @return The object of the specified type.
+     */
+    private fun <T> documentToObject(document: Document, classOff: Class<T>): T {
+        val value = document["value"]
+        val json = Gson().toJson(value)
+        return Gson().fromJson(json, classOff)
+    }
 
     /**
      * Retrieves a list of objects from a collection based on a key.

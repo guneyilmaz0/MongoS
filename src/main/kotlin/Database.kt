@@ -44,7 +44,7 @@ open class Database {
     }
 
     private fun createDBObject(keyName: String, key: Any): DBObject =
-        BasicDBObject().append(keyName, if (key is CaseInsensitiveString) key.compile() else key)
+        BasicDBObject().append(keyName, key)
 
     /**
      * Sets a value in the specified collection with the provided key and value.
@@ -64,7 +64,7 @@ open class Database {
      * @param async whether the operation should be asynchronous.
      */
     fun set(collection: String, key: Any, value: Any, async: Boolean = false) {
-        val keyDocument = Document(KEY_FIELD, if (key is CaseInsensitiveString) key.compile() else key)
+        val keyDocument = Document(KEY_FIELD, key)
         val finalDocument = keyDocument.append(VALUE_FIELD, if (value is MongoSObject) value.toDocument() else value)
         setFinal(collection, key, finalDocument, async)
     }
@@ -140,10 +140,7 @@ open class Database {
         var document = getDocument(collection, keyName, oldKey)
         if (document != null) {
             removeData(collection, oldKey)
-            document = when (newKey) {
-                is CaseInsensitiveString -> document.append(KEY_FIELD, newKey.compile())
-                else -> document.append(KEY_FIELD, newKey)
-            }
+            document = document.append(KEY_FIELD, newKey)
             set(collection, newKey, document)
         }
     }

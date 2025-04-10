@@ -73,7 +73,7 @@ class DatabaseTest {
 
     @Test
     fun `test getObject returns correct value`() {
-        val document = Document("key", "testKey").append("value", TestObject("testValue").toDocument())
+        val document = Document("key", "testKey").append("value", databaseInstance.convertDocument(TestObject("testValue")))
         whenever(mockFindIterable.first()).thenReturn(document)
 
         val result = databaseInstance.getObject("testCollection", "key", "testKey", TestObject::class.java)

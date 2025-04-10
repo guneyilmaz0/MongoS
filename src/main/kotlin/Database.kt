@@ -65,7 +65,7 @@ open class Database {
      */
     fun set(collection: String, key: Any, value: Any, async: Boolean = false) {
         val keyDocument = Document(KEY_FIELD, key)
-        val finalDocument = keyDocument.append(VALUE_FIELD, if (value is MongoSObject) value.toDocument() else value)
+        val finalDocument = keyDocument.append(VALUE_FIELD, if (value is MongoSObject) convertDocument(value) else value)
         setFinal(collection, key, finalDocument, async)
     }
 
@@ -648,6 +648,8 @@ open class Database {
      */
     fun getIterable(collection: String, key: Any): FindIterable<Document> =
         database.getCollection(collection).find(createDBObject(KEY_FIELD, key) as Bson)
+
+    fun convertDocument(mongoSObject: MongoSObject): Document = convertJson(gson.toJson(mongoSObject))
 
     /**
      * Converts a document to a JSON string.

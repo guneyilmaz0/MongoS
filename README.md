@@ -74,15 +74,13 @@ import net.guneyilmaz0.mongos.MongoSObject
 fun main() {
    val mongoS = MongoS("mongodb://localhost:27017", "exampleDB")
    val person = Person(0,"John Doe", 30)
-   mongoS.set("persons", person.id, person)
+   mongoS.set("persons", "john_id", person)
 
-   val john = mongoS.getObject("persons", 0, Person::class.java)
+   val john = mongoS.getObject("persons", "john_id", Person::class.java)
    print(john)
 }
 
-data class Person(val id: Int, val name: String, val age: Int) : MongoSObject() {
-   override fun toString(): String = super.toString()
-}
+data class Person(val id: Int, val name: String, val age: Int) : MongoSObject()
 ```
 
 ---

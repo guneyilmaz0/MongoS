@@ -47,21 +47,39 @@ Add the dependency to your `pom.xml` file:
 
 ## Quick Start
 
+ - Java
 ```java
-// Initialize and connect to MongoDB
-Database db = new Database("mongodb://localhost:27017", "myDatabase");
+    // Initialize and connect to MongoDB
+    MongoS db = new MongoS("myDatabase");
+    
+    // Store data
+    db.set("users", "user123", new User("John Doe", 25));
+    
+    // Retrieve data
+    User user = db.get("users", "user123", User.class);
+    
+    // Check if document exists
+    boolean exists = db.exists("users", "user123");
+    
+    // Retrieve a list of objects
+    List<User> allUsers = db.getList("users", "userList", User.class);
+```
+- Kotlin
+```kotlin
+    // Initialize and connect to MongoDB
+    val db = MongoS("myDatabase")
 
-// Store data
-db.set("users", "user123", new User("John Doe", 25));
+    // Store data
+    db.set("users", "user123", User("John Doe", 25))
 
-// Retrieve data
-User user = db.getObject("users", "user123", User.class);
+    // Retrieve data
+    val user: User? = db.get<User>("users", "user123")
 
-// Check if document exists
-boolean exists = db.exists("users", "user123");
+    // Check if document exists
+    val exists = db.exists("users", "user123")
 
-// Retrieve a list of objects
-List<User> allUsers = db.getList("users", User.class);
+    // Retrieve a list of objects
+    val allUsers: List<User>? = db.getList("users", "userList", User::class.java)
 ```
 
 ## Documentation

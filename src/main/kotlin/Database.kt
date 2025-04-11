@@ -172,6 +172,29 @@ open class Database {
 
     /**
      * Retrieves a value from the specified collection with the provided key.
+     * If the key does not exist, returns the provided default value or throws an exception.
+     * This method is for Java compatibility.
+     *
+     * @param T The type of the value to retrieve.
+     * @param collection The name of the collection.
+     * @param key The key for the value.
+     * @return The value of the specified type, or the default value if not found.
+     * @throws NoSuchElementException If the key does not exist and no default value is provided.
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun <T> get(collection: String, key: Any, clazz: Class<T>): T? {
+        val document = getDocument(collection, key)
+            ?: return null ?: throw NoSuchElementException(
+                "No document found in collection '$collection' with key '$key'."
+            )
+
+        return if (MongoSObject::class.java.isAssignableFrom(clazz))
+            documentToObject(document, clazz)
+        else document[VALUE_FIELD] as? T
+    }
+
+    /**
+     * Retrieves a value from the specified collection with the provided key.
      *
      * @param T The type of the value to retrieve.
      * @param collection The name of the collection.

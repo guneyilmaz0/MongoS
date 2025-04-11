@@ -44,45 +44,33 @@ class DatabaseTest {
     }
 
     @Test
-    fun `test getValue returns correct value when document exists`() {
+    fun `test get returns correct value when document exists`() {
         val document = Document("key", "testKey").append("value", "testValue")
         whenever(mockFindIterable.first()).thenReturn(document)
 
-        val result = databaseInstance.getValue("testCollection", "key", "testKey", "value", "default")
+        val result = databaseInstance.get<String>("testCollection", "testKey", "default")
         assertEquals("testValue", result)
     }
 
-    @Test
-    fun `test getValue returns default value when document does not exist`() {
-        whenever(mockFindIterable.first()).thenReturn(null)
-
-        val result = databaseInstance.getValue("testCollection", "key", "testKey", "value", "default")
-        assertEquals("default", result)
-    }
 
     @Test
     fun `test getList returns correct value`() {
         val document = Document("key", "testKey").append("value", listOf("testValue1", "testValue2"))
         whenever(mockFindIterable.first()).thenReturn(document)
 
-        val result = databaseInstance.getList("testCollection", "key", "testKey", String::class.java)
+        val result = databaseInstance.getList("testCollection", "testKey", String::class.java)
         assertEquals(listOf("testValue1", "testValue2"), result)
     }
 
-    class TestObject(val value: String) : MongoSObject()
-
-// For data class, toString() method is already implemented. So we need to override it.
-//    data class TestObject(val value: String) : MongoSObject() {
-//        override fun toString(): String = super.toString()
-//    }
+    data class TestObject(val value: String) : MongoSObject()
 
     @Test
     fun `test getObject returns correct value`() {
-        val document = Document("key", "testKey").append("value", TestObject("testValue").toString())
+        val document = Document("key", "testKey").append("value", databaseInstance.convertDocument(TestObject("testValue")))
         whenever(mockFindIterable.first()).thenReturn(document)
 
-        val result = databaseInstance.getObject("testCollection", "key", "testKey", TestObject::class.java)
-        assertEquals("testValue", result.value)
+        val result = databaseInstance.get<TestObject>("testCollection", "testKey")
+        assertEquals("testValue", result!!.value)
     }
 
 }

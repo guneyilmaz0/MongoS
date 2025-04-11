@@ -1,116 +1,127 @@
-# MongoS
+# MongoDB Wrapper
 
-MongoS is a **Kotlin** project that provides a seamless interaction with **MongoDB**, offering a robust **backend** solution. It combines fast and optimized database operations with the flexibility of the Kotlin language.
+A lightweight and easy-to-use Java wrapper for MongoDB operations.
 
-![MongoS](https://img.shields.io/badge/Language-Kotlin-7F52FF?logo=kotlin&logoColor=white)
-![MongoDB](https://img.shields.io/badge/Database-MongoDB-47A248?logo=mongodb&logoColor=white)
+## Features
 
----
+- Simple connection setup
+- Streamlined document retrieval operations
+- Support for basic and complex data types
+- Fluent API for common MongoDB operations
 
-## ⛏ Features
+## Requirements
 
-- **MongoDB Connection Management:** Easily connect and perform operations with MongoDB.
-- **JSON Data Format:** Supports using **JSON** format for input and output.
-- **Asynchronous Support:** Leverages **Coroutines** for asynchronous data processing.
-- **Unit Testing:** Features are tested using **JUnit5**.
+- Java 21 or higher
+- MongoDB server
+- Gradle 8.0+ (for building)
 
----
+## Installation
 
-## ⚡ Installation
+### Gradle
 
-1. Clone the **project repository**:
-   ```bash
-   git clone https://github.com/guneyilmaz0/MongoS.git
-   cd MongoS
-   ```
-2. Run Gradle to **install dependencies**:
-   ```bash
-   ./gradlew build
-   ```
-
----
-
-## 📦 Adding to Your Project
-To include `MongoS` in your existing Kotlin project,
-add the following dependencies to your file:
-
-- Gradle
+Add the repository and dependency to your `build.gradle` file:
 
 ```gradle
 repositories {
     mavenCentral()
-    maven("https://jitpack.io")
+    // Add repository if not published to Maven Central
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    implementation("com.github.guneyilmaz0:MongoS:version")
+    implementation 'net.guneyilmaz0:mongos:VERSION'
 }
 ```
 
-- Maven
+### Maven
+
+Add the dependency to your `pom.xml` file:
 
 ```xml
-<repositories>
-    <repository>
-        <id>jitpack.io</id>
-        <url>https://jitpack.io</url>
-    </repository>
-   
+<repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+</repository>
+
 <dependency>
-    <groupId>com.github.guneyilmaz0</groupId>
-    <artifactId>MongoS</artifactId>
-    <version>version</version>
+    <groupId>net.guneyilmaz0</groupId>
+    <artifactId>mongos</artifactId>
+    <version>VERSION</version>
 </dependency>
 ```
 
-## 🔍 Usage Example
+## Quick Start
 
-Below is an example of adding a simple document using the MongoS project:
-
+ - Java
+```java
+    // Initialize and connect to MongoDB
+    MongoS db = new MongoS("myDatabase");
+    
+    // Store data
+    db.set("users", "user123", new User("John Doe", 25));
+    
+    // Retrieve data
+    User user = db.get("users", "user123", User.class);
+    
+    // Check if document exists
+    boolean exists = db.exists("users", "user123");
+    
+    // Retrieve a list of objects
+    List<User> allUsers = db.getList("users", "userList", User.class);
+```
+- Kotlin
 ```kotlin
-import net.guneyilmaz0.mongos.MongoS
-import net.guneyilmaz0.mongos.MongoSObject
+    // Initialize and connect to MongoDB
+    val db = MongoS("myDatabase")
 
-fun main() {
-   val mongoS = MongoS("mongodb://localhost:27017", "exampleDB")
-   val person = Person(0,"John Doe", 30)
-   mongoS.set("persons", person.id, person)
+    // Store data
+    db.set("users", "user123", User("John Doe", 25))
 
-   val john = mongoS.getObject("persons", 0, Person::class.java)
-   print(john)
-}
+    // Retrieve data
+    val user: User? = db.get<User>("users", "user123")
 
-data class Person(val id: Int, val name: String, val age: Int) : MongoSObject() {
-   override fun toString(): String = super.toString()
-}
+    // Check if document exists
+    val exists = db.exists("users", "user123")
+
+    // Retrieve a list of objects
+    val allUsers: List<User>? = db.getList("users", "userList", User::class.java)
 ```
 
----
+## Documentation
 
-## 💡 Contributing
+### Database Class Methods
 
-Contributions are welcome! Please follow these steps:
+| Method                             | Description                                          |
+|------------------------------------|------------------------------------------------------|
+| `isConnected()`                    | Checks if connected to the database                  |
+| `get(collection, id)`              | Retrieves a document as a raw object                 |
+| `getList(collection, class)`       | Retrieves all documents in a collection as objects   |
+| `set(collection, id, object)`      | Stores an object in the specified collection         |
 
-1. Fork this repository.
-2. Create a branch for your feature or fix:
-   ```bash
-   git checkout -b new-feature
-   ```
-3. Commit your changes:
-   ```bash
-   git commit -m "Add a new feature"
-   git push origin new-feature
-   ```
-4. Submit a pull request.
+## Building from Source
 
----
+```bash
+git clone https://github.com/guneyilmaz0/mongos.git
+cd mongos
+./gradlew build
+```
 
-## 👤 Author
+## Testing
 
-This project was developed by [**Güney Yılmaz**](https://github.com/guneyilmaz0).
-Feel free to reach out for any questions:
+Run the test suite with:
 
-- **GitHub:** [guneyilmaz0](https://github.com/guneyilmaz0)
-- **Email:** `guneyyilmaz2707@gmail.com`
+```bash
+./gradlew test
+```
 
----
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Contact
+
+- GitHub: [guneyilmaz0](https://github.com/guneyilmaz0)

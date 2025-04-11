@@ -1,9 +1,9 @@
 plugins {
-    kotlin("jvm") version "2.1.10"
+    kotlin("jvm") version "2.1.20"
 }
 
 group = "net.guneyilmaz0.mongos"
-version = "1.1.1-build"
+version = "1.1.2-build"
 
 repositories {
     mavenCentral()
@@ -14,7 +14,7 @@ dependencies {
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     implementation("org.mongodb:mongodb-driver-sync:5.3.1")
-    implementation("org.mongodb:bson:5.3.1")
+    implementation("org.mongodb:bson:5.4.0")
     implementation("com.google.code.gson:gson:2.12.1")
     implementation("ch.qos.logback:logback-classic:1.5.16")
 }

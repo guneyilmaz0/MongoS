@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "net.guneyilmaz0.mongos"
-version = "1.1.2-build"
+version = "1.1.1"
 
 repositories {
     mavenCentral()

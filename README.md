@@ -29,7 +29,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'net.guneyilmaz0:mongos:1.0.0'
+    implementation 'net.guneyilmaz0:mongos:VERSION'
 }
 ```
 
@@ -38,10 +38,15 @@ dependencies {
 Add the dependency to your `pom.xml` file:
 
 ```xml
+<repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+</repository>
+
 <dependency>
     <groupId>net.guneyilmaz0</groupId>
     <artifactId>mongos</artifactId>
-    <version>1.0.0</version>
+    <version>VERSION</version>
 </dependency>
 ```
 
@@ -90,7 +95,6 @@ Add the dependency to your `pom.xml` file:
 |------------------------------------|------------------------------------------------------|
 | `isConnected()`                    | Checks if connected to the database                  |
 | `get(collection, id)`              | Retrieves a document as a raw object                 |
-| `getObject(collection, id, class)` | Retrieves and maps a document to the specified class |
 | `getList(collection, class)`       | Retrieves all documents in a collection as objects   |
 | `set(collection, id, object)`      | Stores an object in the specified collection         |
 

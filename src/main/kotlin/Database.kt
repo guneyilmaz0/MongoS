@@ -18,6 +18,7 @@ import org.bson.conversions.Bson
  * It provides methods to initialize the database, set and get values, update and remove data, and check if data exists.
  *
  * @property database the MongoDB database instance.
+ * @author guneyilmaz0
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 open class Database {
@@ -65,7 +66,8 @@ open class Database {
      */
     fun set(collection: String, key: Any, value: Any, async: Boolean = false) {
         val keyDocument = Document(KEY_FIELD, key)
-        val finalDocument = keyDocument.append(VALUE_FIELD, if (value is MongoSObject) convertDocument(value) else value)
+        val finalDocument =
+            keyDocument.append(VALUE_FIELD, if (value is MongoSObject) convertDocument(value) else value)
         setFinal(collection, key, finalDocument, async)
     }
 
@@ -127,7 +129,6 @@ open class Database {
     fun removeData(collection: String, key: Any): Document? =
         database.getCollection(collection).findOneAndDelete(createDBObject(key) as Bson)
 
-
     /**
      * Checks if a document exists in the specified collection with the provided key.
      * Supports CaseInsensitiveString for key matching.
@@ -138,7 +139,6 @@ open class Database {
      */
     fun exists(collection: String, key: Any): Boolean =
         database.getCollection(collection).find(createDBObject(key) as Bson).first() != null
-
 
     /**
      * Gets all keys in the specified collection.
@@ -170,22 +170,38 @@ open class Database {
             .find(Filters.and(filters.map { Filters.eq(it.key, it.value) }))
             .associate { it[KEY_FIELD].toString() to it[VALUE_FIELD]!! }
 
-
+    /**
+     * Retrieves a value from the specified collection with the provided key.
+     *
+     * @param T The type of the value to retrieve.
+     * @param collection The name of the collection.
+     * @param key The key for the value.
+     * @return The value of the specified type, or null if not found.
+     */
     inline fun <reified T> get(collection: String, key: Any): T? {
         return get(collection, key, null)
     }
 
+    /**
+     * Retrieves a value from the specified collection with the provided key.
+     * If the key does not exist, returns the provided default value or throws an exception.
+     *
+     * @param T The type of the value to retrieve.
+     * @param collection The name of the collection.
+     * @param key The key for the value.
+     * @param defaultValue The default value to return if the key does not exist. Defaults to null.
+     * @return The value of the specified type, or the default value if not found.
+     * @throws NoSuchElementException If the key does not exist and no default value is provided.
+     */
     inline fun <reified T> get(collection: String, key: Any, defaultValue: T? = null): T? {
         val document = getDocument(collection, key)
             ?: return defaultValue ?: throw NoSuchElementException(
                 "No document found in collection '$collection' with key '$key'."
             )
 
-        return if (MongoSObject::class.java.isAssignableFrom(T::class.java)) {
+        return if (MongoSObject::class.java.isAssignableFrom(T::class.java))
             documentToObject(document, T::class.java)
-        } else {
-            document[VALUE_FIELD] as? T
-        }
+        else document[VALUE_FIELD] as? T
     }
 
     /**
@@ -227,7 +243,6 @@ open class Database {
      */
     fun getDocument(collection: String, key: Any): Document? =
         database.getCollection(collection).find(createDBObject(key) as Bson).first()
-
 
     /**
      * Retrieves documents from a collection that match the specified key.

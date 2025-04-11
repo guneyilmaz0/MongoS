@@ -11,6 +11,7 @@ import org.bson.Document
  * It provides methods to get a collection, watch a collection, and get another database.
  *
  * @property mongo the MongoDB client instance.
+ * @author guneyilmaz0
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class MongoS : Database {
